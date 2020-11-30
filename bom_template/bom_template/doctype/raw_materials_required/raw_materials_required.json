@@ -1,0 +1,39 @@
+{
+ "creation": "2020-11-27 13:37:24.696062",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "rm_name",
+  "rm_code"
+ ],
+ "fields": [
+  {
+   "fieldname": "rm_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Raw Material Name",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "rm_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Raw Material Code",
+   "options": "Item",
+   "reqd": 1
+  }
+ ],
+ "istable": 1,
+ "modified": "2020-11-27 18:02:24.039391",
+ "modified_by": "Administrator",
+ "module": "BOM Template",
+ "name": "Raw Materials Required",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

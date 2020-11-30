@@ -1,0 +1,47 @@
+{
+ "creation": "2020-11-27 17:38:17.087979",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "s_name",
+  "s_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "s_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "s_id",
+   "fieldtype": "Data",
+   "label": "Id",
+   "reqd": 1
+  }
+ ],
+ "issingle": 1,
+ "modified": "2020-11-29 12:48:39.518000",
+ "modified_by": "Administrator",
+ "module": "BOM Template",
+ "name": "SP",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
