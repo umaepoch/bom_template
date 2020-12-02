@@ -4,20 +4,12 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "mp_name",
   "mp_id",
   "im",
   "rm",
   "amended_from"
  ],
  "fields": [
-  {
-   "fieldname": "mp_name",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Manufacturing Process Name",
-   "reqd": 1
-  },
   {
    "fieldname": "mp_id",
    "fieldtype": "Data",
@@ -48,7 +40,7 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2020-11-29 12:48:26.469126",
+ "modified": "2020-12-02 10:50:50.955931",
  "modified_by": "Administrator",
  "module": "BOM Template",
  "name": "Manufaturing Process",
