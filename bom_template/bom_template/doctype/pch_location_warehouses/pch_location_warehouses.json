@@ -178,7 +178,7 @@
    "search_index": 0, 
    "set_only_once": 0, 
    "translatable": 0, 
-   "unique": 0
+   "unique": 1
   }, 
   {
    "allow_bulk_edit": 0, 
@@ -212,7 +212,7 @@
    "search_index": 0, 
    "set_only_once": 0, 
    "translatable": 0, 
-   "unique": 0
+   "unique": 1
   }, 
   {
    "allow_bulk_edit": 0, 
@@ -259,7 +259,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-12-08 11:12:10.797302", 
+ "modified": "2020-12-10 13:14:18.728160", 
  "modified_by": "Administrator", 
  "module": "BOM Template", 
  "name": "Pch Location Warehouses", 
