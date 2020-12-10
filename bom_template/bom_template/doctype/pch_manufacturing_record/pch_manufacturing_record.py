@@ -21,7 +21,7 @@ def get_start_end_process_raw_materials(start_process,end_process):
 		for item in process_raw_materials_list:
 			start_end_process_raw_materials_data.append(item)
 
-	print "start_end_process_raw_materials_data",start_end_process_raw_materials_data
+	#print "start_end_process_raw_materials_data",start_end_process_raw_materials_data
 	return start_end_process_raw_materials_data
 
 def get_manufacture_method_details_raw_items(doc_name):
