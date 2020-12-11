@@ -11,15 +11,15 @@ frappe.ui.form.on("Pch Manufacturing Record", "manufacturing_method", function(f
     var method_id = cur_frm.doc.manufacturing_method;
     //var readings = fetch_cocpf_readings(cocpf_id);
     frappe.call({
-        method: "bom_template.bom_api.get_doc_data",
+        method: "bom_template.bom_api.get_child_doc_data",
         args: {
-	    "doc_type":"Pch Manufacturing Method",
-      "doc_name": method_id,
+	    "doc_type":"Pch Manufacturing Method Child",
+      "parent": method_id,
         },
         async: false,
         callback: function(r) {
             if (r.message) {
-                //console.log("method_doc_data" + JSON.stringify(r.message));
+                console.log("method_doc_data" + JSON.stringify(r.message));
 								cur_frm.clear_table("method_items");
 								var method_doc_data = r.message;
 								for (var i=0;i<method_doc_data.length;i++){
@@ -45,7 +45,14 @@ frappe.ui.form.on("Pch Manufacturing Record", "get_required_items", function(frm
 
 	get_start_end_process_raw_materials(start_process,end_process)
 });
+frappe.ui.form.on("Pch Manufacturing Record", "location", function(frm, cdt, cdn) {
+	var location_name = cur_frm.doc.location;
+	var wh_json = fetch_in_out_wh(location_name);
+	cur_frm.set_value("source_warehouse", wh_json.inbound_warehouse);
+	cur_frm.set_value("target_warehouse",wh_json.outbound_warehouse);
+});
 
+/* Location selection trigger requirement changed
 frappe.ui.form.on("Pch Manufacturing Record", "location", function(frm, cdt, cdn) {
 	var location_name = cur_frm.doc.location;
 	var wh_json = fetch_in_out_wh(location_name);
@@ -75,6 +82,7 @@ function fetch_in_out_wh(location_name){
     });
 		return wh_json_temp
 }
+*/
 
 
 function get_start_end_process_raw_materials(start_process,end_process){
