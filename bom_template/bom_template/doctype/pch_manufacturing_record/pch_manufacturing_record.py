@@ -27,3 +27,12 @@ def get_start_end_process_raw_materials(start_process,end_process):
 def get_manufacture_method_details_raw_items(doc_name):
 	manufacture_method_details_raw_items = frappe.db.sql("""select * from `tabPch Manufacturing Method Details Items` where parent = %s""",(doc_name), as_dict=1)
 	return manufacture_method_details_raw_items
+
+@frappe.whitelist()
+def get_child_doc_data(doc_type,parent):
+    table="tab"+doc_type
+    #table='`tab'+doc_type+'`'
+    sql = "select  * from `"+table+"` where parent='"+parent+"'"
+    #sql = "select  * from `"+table+"`"
+    doc_data = frappe.db.sql(sql,as_dict=1)
+    return doc_data

@@ -11,10 +11,10 @@ frappe.ui.form.on("Pch Manufacturing Record", "manufacturing_method", function(f
     var method_id = cur_frm.doc.manufacturing_method;
     //var readings = fetch_cocpf_readings(cocpf_id);
 		if(method_id){
-			console.log("method_id",method_id);
+			console.log(" doc api method_id",method_id);
 
 			frappe.call({
-	        method: "bom_template.bom_api.get_child_doc_data",
+	        method: "bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.get_child_doc_data",
 	        args: {
 		    "doc_type":"Pch Manufacturing Method Child",
 	      "parent": method_id,
