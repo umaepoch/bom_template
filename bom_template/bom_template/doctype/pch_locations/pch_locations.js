@@ -4,6 +4,7 @@
 frappe.ui.form.on('Pch Locations', {
 	refresh: function(frm) {
 
+}
 });
 frappe.ui.form.on("Pch Locations", "get_process", function(frm, cdt, cdn) {
 	var process_list =get_process_list();
