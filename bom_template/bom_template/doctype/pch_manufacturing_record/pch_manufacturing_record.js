@@ -57,6 +57,27 @@ frappe.ui.form.on("Pch Manufacturing Record", "location", function(frm, cdt, cdn
 	cur_frm.set_value("target_warehouse",wh_json.outbound_warehouse);
 });
 
+frappe.ui.form.on("Pch Manufacturing Record", "pch_method", function(frm, cdt, cdn) {
+	console.log("pch_method filed trigger  working")
+
+});
+
+frappe.ui.form.on("Pch Manufacturing Record", "pch_process", function(frm, cdt, cdn) {
+	console.log("pch_process filed trigger  working")
+
+	var method_name = cur_frm.doc.pch_method;
+	var process_name = cur_frm.doc.pch_process;
+
+	if(method_name && process_name){
+		console.log("condition working")
+	}else{
+		console.log("condition not  working")
+
+	}
+	//cur_frm.set_value("source_warehouse", wh_json.inbound_warehouse);
+	//cur_frm.set_value("target_warehouse",wh_json.outbound_warehouse);
+});
+
 /* Location selection trigger requirement changed
 frappe.ui.form.on("Pch Manufacturing Record", "location", function(frm, cdt, cdn) {
 	var location_name = cur_frm.doc.location;
