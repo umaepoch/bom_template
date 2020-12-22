@@ -34,11 +34,8 @@ def get_start_end_process_raw_materials(start_process,end_process,method):
 		"""
 
 def get_pro_order_wise_manufacture_method_details_raw_items(start_process,end_process,method):
-	print "start_process :",start_process," method:",method
 	start_process_pro_ord_no = frappe.db.get_value("Pch Manufacturing Method Details", {"name":start_process},"process_order")
 	end_process_pro_ord_no = frappe.db.get_value("Pch Manufacturing Method Details", {"name":end_process},"process_order")
-	print "start_process_pro_ord_no",start_process_pro_ord_no
-	print "end_process_pro_ord_no",end_process_pro_ord_no
 
 	manufacture_method_details_raw_items = frappe.db.sql("""select
 	mmd.name,mmdi.item_code,mmdi.uom,mmdi.stock_uom,mmdi.conversion_factor,mmdi.operand,mmdi.qty_in_stock_uom
@@ -47,7 +44,6 @@ def get_pro_order_wise_manufacture_method_details_raw_items(start_process,end_pr
 	where
 	mmd.name=mmdi.parent and process_order>=%s and process_order<= %s and pch_method= %s """,(start_process_pro_ord_no,end_process_pro_ord_no,method), as_dict=1)
 
-	print "manufacture_method_details_raw_items",manufacture_method_details_raw_items
 
 	return manufacture_method_details_raw_items
 
