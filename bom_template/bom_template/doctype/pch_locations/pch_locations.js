@@ -2,12 +2,7 @@
 // For license information, please see license.txt
 
 
-<<<<<<< HEAD
-}
-});
-=======
 
->>>>>>> 45cf3effb48c78a69a2a5188e3ccb1e8ec7d1dd6
 frappe.ui.form.on("Pch Locations", "get_process", function(frm, cdt, cdn) {
 	var process_list =get_process_list();
 	var child_doc_data = cur_frm.doc.locations_child;
