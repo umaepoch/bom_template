@@ -36,6 +36,44 @@ frappe.ui.form.on("Pch Manufacturing Method Details", "pch_process", function(fr
 	}
 });
 
+//Process Order validation:To ensure the Process order is unique across all methods
+frappe.ui.form.on("Pch Manufacturing Method Details","process_order",function (frm,cdt,cdn){
+
+	var process_order=cur.frm.doc.process_order;
+	console.log('Check');
+	var unique_flag;
+	unique_flag=process_order_validation(process_order);
+	consol
+	if(unique_flag===0){
+	
+		frappe.msgprint('This Process Order has already been used for a Method Process Combination, please enter a new process order number');
+		//cur.frm.doc.process_order=0;
+	}
+	
+});
+
+//Process order validation function
+function process_order_validation(process_order){
+	
+	var is_unique_process_order;
+	frappe.call({
+		method:
+		'bom_template.bom_template.doctype.pch_manufacturing_method_details.pch_manufacturing_method_details.get_process_order_values',
+		async:false,
+		args:{
+			"process_order":process_order
+		},
+		
+		callback:function(r){
+			
+			is_unique_process_order=r.message;
+		}
+
+	
+});
+	return is_unique_process_order
+}
+
 function process_validation_against_method(method_name,process_name){
 	var process_flag ;
 	frappe.call({

@@ -29,3 +29,18 @@ def get_process_list():
 	for process_row in process_dic:
 		process_dic_list.append(process_row["process_name"])
 	return process_dic_list
+	
+	
+@frappe.whitelist()
+def get_process_order_values(process_order):
+	
+	pr_order_list=frappe.db.get_all("Pch Manufacturing Method Details",fields=["process_order"],as_list=True);
+	print("Here");
+	for process in po_order_list:
+		if(process_order==process):
+			flag=0;
+			print('This process order has already been used');
+		else:
+			flag=1;
+	return flag
+	
