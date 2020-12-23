@@ -61,3 +61,24 @@ def get_child_doc_data(doc_type,parent):
     #sql = "select  * from `"+table+"`"
     doc_data = frappe.db.sql(sql,as_dict=1)
     return doc_data
+
+#Ak
+@frappe.whitelist()
+def validate_start_and_end_process(start_process,end_process):
+	st_list=frappe.db.sql("""select `process_order` as `start_process_order` from  `tabPch Manufacturing Method Details` where meth_pro_con=%s""",(start_process),as_dict=1);
+	en_list=frappe.db.sql("""select `process_order` as `end_process_order`  from  `tabPch Manufacturing Method Details` where meth_pro_con=%s""",(end_process),as_dict=1);
+	length1=len(st_list);
+	length2=len(en_list);
+	if(length1==0 or length2==0):
+		print('Manufacturing Method details document is not configured. Please configure Manufacturing Method details and re-try');
+	else:
+		for start_process_value in st_list:
+			for end_process_value in en_list:
+				print(end_process_value);
+				print(start_process_value);
+				sp_value=start_process_value.start_process_order;
+				ep_value=end_process_value.end_process_order;
+				if(ep_value < sp_value):
+					flag=0;
+					print('End process cannot occur before the start process');
+	return flag;

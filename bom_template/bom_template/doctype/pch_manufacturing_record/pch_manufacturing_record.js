@@ -149,3 +149,55 @@ function set_start_end_process_raw_materials(start_process,end_process,method){
 		}
     });
 }
+//Ak
+//Validation to ensure the process order of start process is not greater than the process order of end process
+frappe.ui.form.on("Pch Manufacturing Record","end_process",function(frm,cdt,cdn){
+
+	
+	console.log("Box box box");
+	var start_process=cur_frm.doc.start_process;
+	console.log(start_process);
+	var end_process=cur_frm.doc.end_process;
+	console.log(end_process);
+	//var check;
+	var validate_value=process_order_details(start_process,end_process);
+	console.log(validate_value);
+	
+
+	
+	if(validate_value===0){
+	
+		frappe.msgprint("Process Order incorrect. End Process cannot occur before the Start Process, please re-check the sequence");
+		cur_frm.doc.end_process=null;	
+	}
+	
+	
+
+});
+
+
+
+
+function process_order_details(start_process,end_process){
+
+	var is_valid_flag;
+	frappe.call({
+									 							   method:"bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.validate_start_and_end_process",
+	args:{
+
+		"start_process":start_process,
+		"end_process":end_process
+
+	     },
+	async:false,
+	callback:function(r){
+
+	is_valid_flag=r.message;
+	}
+		
+
+
+});
+
+return is_valid_flag
+}
