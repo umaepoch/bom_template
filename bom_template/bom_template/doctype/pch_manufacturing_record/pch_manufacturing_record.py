@@ -62,16 +62,22 @@ def get_child_doc_data(doc_type,parent):
     doc_data = frappe.db.sql(sql,as_dict=1)
     return doc_data
 
+@frappe.whitelist()
+def get_wh_ac_to_location(location_name,wh_type,process):
+    wh_name_dic = frappe.db.sql("""select outbound_warehouse,inbound_warehouse from `tabPch Locations Child` where parent = %s and process_name = %s """,(location_name,process), as_dict=1)
+    return wh_name_dic[0][wh_type]
+
 #Ak
 @frappe.whitelist()
 def validate_start_and_end_process(start_process,end_process):
-	flag=0;
+	flag=1;
 	st_list=frappe.db.sql("""select `process_order` as `start_process_order` from  `tabPch Manufacturing Method Details` where meth_pro_con=%s""",(start_process),as_dict=1);
 	en_list=frappe.db.sql("""select `process_order` as `end_process_order`  from  `tabPch Manufacturing Method Details` where meth_pro_con=%s""",(end_process),as_dict=1);
 	length1=len(st_list);
 	length2=len(en_list);
 	if(length1==0 or length2==0):
-		print('Manufacturing Method details document is not configured. Please configure Manufacturing Method details and re-try');
+		#print('Manufacturing Method details document is not configured. Please configure Manufacturing Method details and re-try');
+		pass
 	else:
 		for start_process_value in st_list:
 			for end_process_value in en_list:
@@ -80,6 +86,6 @@ def validate_start_and_end_process(start_process,end_process):
 				sp_value=start_process_value.start_process_order;
 				ep_value=end_process_value.end_process_order;
 				if(ep_value < sp_value):
-					flag=True;
-					print('End process cannot occur before the start process');
+					flag=0;
+					#print('End process cannot occur before the start process');
 	return flag;

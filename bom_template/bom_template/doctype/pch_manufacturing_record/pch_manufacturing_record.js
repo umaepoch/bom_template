@@ -54,65 +54,30 @@ frappe.ui.form.on("Pch Manufacturing Record", "get_required_items", function(frm
 	set_start_end_process_raw_materials(start_process,end_process,method)
 });
 
-frappe.ui.form.on("Pch Manufacturing Record", "location", function(frm, cdt, cdn) {
+
+//what if selected process or location has no wh details?
+frappe.ui.form.on("Pch Manufacturing Record", "start_process", function(frm, cdt, cdn) {
 	var location_name = cur_frm.doc.location;
-	var wh_json = fetch_in_out_wh(location_name);
-	cur_frm.set_value("source_warehouse", wh_json.inbound_warehouse);
-	cur_frm.set_value("target_warehouse",wh_json.outbound_warehouse);
+	var start_process_temp = cur_frm.doc.start_process;
+	var process_name = get_process_name(start_process_temp)
+	console.log("process_name",process_name)
+	var outbound_warehouse_temp = get_wh_ac_to_location(location_name,"outbound_warehouse",process_name);
+	console.log("outbound_warehouse_temp",outbound_warehouse_temp)
+	cur_frm.set_value("outbound_warehouse", outbound_warehouse_temp);
 });
 
-frappe.ui.form.on("Pch Manufacturing Record", "pch_method", function(frm, cdt, cdn) {
-	console.log("pch_method filed trigger  working")
-
-});
-
-frappe.ui.form.on("Pch Manufacturing Record", "pch_process", function(frm, cdt, cdn) {
-	console.log("pch_process filed trigger  working")
-
-	var method_name = cur_frm.doc.pch_method;
-	var process_name = cur_frm.doc.pch_process;
-
-	if(method_name && process_name){
-		console.log("condition working")
-	}else{
-		console.log("condition not  working")
-
+frappe.ui.form.on("Pch Manufacturing Record","end_process",function(frm,cdt,cdn){
+	var validation_flag = end_process_field_validation();
+	if (validation_flag == 1){
+		var location_name = cur_frm.doc.location;
+		var start_process_temp = cur_frm.doc.start_process;
+		var process_name = get_process_name(start_process_temp)
+		var inbound_warehouse_temp = get_wh_ac_to_location(location_name,"inbound_warehouse",process_name);
+		cur_frm.set_value("receiving_warehouse", inbound_warehouse_temp);
 	}
-	//cur_frm.set_value("source_warehouse", wh_json.inbound_warehouse);
-	//cur_frm.set_value("target_warehouse",wh_json.outbound_warehouse);
+
 });
 
-/* Location selection trigger requirement changed
-frappe.ui.form.on("Pch Manufacturing Record", "location", function(frm, cdt, cdn) {
-	var location_name = cur_frm.doc.location;
-	var wh_json = fetch_in_out_wh(location_name);
-	cur_frm.set_value("source_warehouse", wh_json.inbound_warehouse);
-	cur_frm.set_value("target_warehouse",wh_json.outbound_warehouse);
-});
-
-function fetch_in_out_wh(location_name){
-	var wh_json_temp = "";
-    frappe.call({
-        method: 'frappe.client.get_value',
-        args: {
-            doctype: "Pch Location Warehouses",
-            filters: {
-                location: ["=", location_name]
-            },
-            fieldname: ["outbound_warehouse","inbound_warehouse"]
-        },
-        async: false,
-        callback: function(r) {
-					if (r.message) {
-					//	console.log("........." + JSON.stringify(r.message));
-            wh_json_temp = r.message;
-					}
-
-        }
-    });
-		return wh_json_temp
-}
-*/
 
 
 function set_start_end_process_raw_materials(start_process,end_process,method){
@@ -149,44 +114,28 @@ function set_start_end_process_raw_materials(start_process,end_process,method){
 		}
     });
 }
-//Ak
-//Validation to ensure the process order of start process is not greater than the process order of end process
-frappe.ui.form.on("Pch Manufacturing Record","end_process",function(frm,cdt,cdn){
 
-	
-	console.log("Box box");
+function end_process_field_validation(){
+	var validation_flag = 1
 	var start_process=cur_frm.doc.start_process;
-	console.log(start_process);
 	var end_process=cur_frm.doc.end_process;
-	console.log(end_process);
 	//var check;
 	var validate_value=process_order_details(start_process,end_process);
 	console.log(validate_value);
-	
 
-	
-	if(validate_value===true){
-	
+	if(validate_value == 0){
 		frappe.msgprint("Process Order incorrect. End Process cannot occur before the Start Process, please re-check the sequence");
 		frm.set_value('end_process',"");
+		validation_flag = 0
 	}
-	
-	
+	return validation_flag;
+}
 
-});
-
-
-
-/*frappe.ui.form.on("Pch Manufacturing Record","end_process",function(frm,cdt,cdn){
-
-	var end_process=cur_frm.doc.start_process;
-
-});*/
 function process_order_details(start_process,end_process){
 
 	var is_valid_flag;
 	frappe.call({
-									 							   method:"bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.validate_start_and_end_process",
+  method:"bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.validate_start_and_end_process",
 	args:{
 
 		"start_process":start_process,
@@ -198,10 +147,48 @@ function process_order_details(start_process,end_process){
 
 	is_valid_flag=r.message;
 	}
-		
-
-
 });
-
 return is_valid_flag
+}
+
+function get_wh_ac_to_location(location_name,wh_type,process){
+	var wh_name = "";
+	frappe.call({
+		method: 'bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.get_wh_ac_to_location',
+		args: {
+			 "location_name":location_name,
+			 "wh_type":wh_type,
+			 "process":process
+		},
+		async: false,
+		callback: function(r) {
+			 if (r.message) {
+				 wh_name = r.message
+				}
+		}
+		});
+		return wh_name
+}
+
+function get_process_name(mmd_id){
+	var process = "";
+    frappe.call({
+        method: 'frappe.client.get_value',
+        args: {
+            doctype: "Pch Manufacturing Method Details",
+            filters: {
+							name: ["=", mmd_id]
+            },
+            fieldname: ["pch_process"] //"outbound_warehouse","inbound_warehouse"
+        },
+        async: false,
+        callback: function(r) {
+					if (r.message) {
+					//	console.log("........." + JSON.stringify(r.message));
+            process = r.message.pch_process;
+					}
+
+        }
+    });
+		return process
 }
