@@ -73,19 +73,9 @@ def validate_start_and_end_process(start_process,end_process):
 	flag=1;
 	st_list=frappe.db.sql("""select `process_order` as `start_process_order` from  `tabPch Manufacturing Method Details` where meth_pro_con=%s""",(start_process),as_dict=1);
 	en_list=frappe.db.sql("""select `process_order` as `end_process_order`  from  `tabPch Manufacturing Method Details` where meth_pro_con=%s""",(end_process),as_dict=1);
-	length1=len(st_list);
-	length2=len(en_list);
-	if(length1==0 or length2==0):
-		#print('Manufacturing Method details document is not configured. Please configure Manufacturing Method details and re-try');
-		pass
-	else:
-		for start_process_value in st_list:
-			for end_process_value in en_list:
-				print(end_process_value);
-				print(start_process_value);
-				sp_value=start_process_value.start_process_order;
-				ep_value=end_process_value.end_process_order;
-				if(ep_value < sp_value):
-					flag=0;
-					#print('End process cannot occur before the start process');
-	return flag;
+	start_process_order_value=st_list[0]["start_process_order"];
+	end_process_order_value=en_list[0]["end_process_order"];
+	if(start_process_order_value > end_process_order_value):
+		print('End process cannot occur before start process');
+		flag=0;
+	return flag
