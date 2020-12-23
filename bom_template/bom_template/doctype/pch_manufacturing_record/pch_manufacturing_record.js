@@ -154,7 +154,7 @@ function set_start_end_process_raw_materials(start_process,end_process,method){
 frappe.ui.form.on("Pch Manufacturing Record","end_process",function(frm,cdt,cdn){
 
 	
-	console.log("Box box box");
+	console.log("Box box");
 	var start_process=cur_frm.doc.start_process;
 	console.log(start_process);
 	var end_process=cur_frm.doc.end_process;
@@ -165,10 +165,10 @@ frappe.ui.form.on("Pch Manufacturing Record","end_process",function(frm,cdt,cdn)
 	
 
 	
-	if(validate_value===0){
+	if(validate_value===true){
 	
 		frappe.msgprint("Process Order incorrect. End Process cannot occur before the Start Process, please re-check the sequence");
-		cur_frm.doc.end_process=null;	
+		frm.set_value('end_process',"");
 	}
 	
 	
@@ -177,7 +177,11 @@ frappe.ui.form.on("Pch Manufacturing Record","end_process",function(frm,cdt,cdn)
 
 
 
+/*frappe.ui.form.on("Pch Manufacturing Record","end_process",function(frm,cdt,cdn){
 
+	var end_process=cur_frm.doc.start_process;
+
+});*/
 function process_order_details(start_process,end_process){
 
 	var is_valid_flag;
