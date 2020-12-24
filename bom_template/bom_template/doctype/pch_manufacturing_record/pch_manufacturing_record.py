@@ -12,7 +12,7 @@ class PchManufacturingRecord(Document):
 @frappe.whitelist()
 def get_start_end_process_raw_materials(start_process,end_process,method):
 	if start_process == end_process :
-		start_process_raw_item_data = get_manufacture_method_details_raw_items(start_process)
+		start_process_raw_item_data = get_pro_order_wise_manufacture_method_details_raw_items(start_process,start_process,method)
 		return start_process_raw_item_data
 	else:
 		#product_order_wise_data_start
@@ -22,23 +22,39 @@ def get_start_end_process_raw_materials(start_process,end_process,method):
 
 		#product_ordee_wise_data_end
 
-		"""
-		start_end_process_raw_materials_list = [start_process_raw_item_data,end_process_raw_item_data]
-		start_end_process_raw_materials_data=[]
-		for process_raw_materials_list in start_end_process_raw_materials_list:
-			for item in process_raw_materials_list:
-				start_end_process_raw_materials_data.append(item)
 
-		#print "start_end_process_raw_materials_data",start_end_process_raw_materials_data
+
+@frappe.whitelist()
+def get_start_end_p_process_details(start_process,end_process,method):
+	if start_process == end_process :
+		start_process_raw_item_data = get_pro_order_wise_process_details(start_process,start_process,method)
+		return start_process_raw_item_data
+	else:
+		#product_order_wise_data_start
+		#end_process_raw_item_data = get_manufacture_method_details_raw_items(end_process)
+		start_end_process_raw_materials_data = get_pro_order_wise_process_details(start_process,end_process,method)
 		return start_end_process_raw_materials_data
-		"""
+
+def get_pro_order_wise_process_details(start_process,end_process,method):
+	start_process_pro_ord_no = frappe.db.get_value("Pch Manufacturing Method Details", {"name":start_process},"process_order")
+	end_process_pro_ord_no = frappe.db.get_value("Pch Manufacturing Method Details", {"name":end_process},"process_order")
+
+	mmd_process_details = frappe.db.sql("""select
+	mmd.name,mmd.pch_process,mmd.pch_method,mmd.process_order,mmd.turnaround_time,mmd.touch_points
+	from
+	`tabPch Manufacturing Method Details` mmd
+	where
+	mmd.process_order>=%s and mmd.process_order<= %s and mmd.pch_method= %s order by mmd.process_order asc""",(start_process_pro_ord_no,end_process_pro_ord_no,method), as_dict=1)
+
+
+	return mmd_process_details
 
 def get_pro_order_wise_manufacture_method_details_raw_items(start_process,end_process,method):
 	start_process_pro_ord_no = frappe.db.get_value("Pch Manufacturing Method Details", {"name":start_process},"process_order")
 	end_process_pro_ord_no = frappe.db.get_value("Pch Manufacturing Method Details", {"name":end_process},"process_order")
 
 	manufacture_method_details_raw_items = frappe.db.sql("""select
-	mmd.name,mmdi.item_code,mmdi.uom,mmdi.stock_uom,mmdi.conversion_factor,mmdi.operand,mmdi.qty_in_stock_uom
+	mmd.name,mmdi.item_code,mmdi.item_name,mmdi.qty,mmdi.uom,mmdi.stock_uom,mmdi.conversion_factor,mmdi.operand,mmdi.qty_in_stock_uom
 	from
 	`tabPch Manufacturing Method Details` mmd,`tabPch Manufacturing Method Details Items` mmdi
 	where
@@ -47,11 +63,6 @@ def get_pro_order_wise_manufacture_method_details_raw_items(start_process,end_pr
 
 	return manufacture_method_details_raw_items
 
-
-
-def get_manufacture_method_details_raw_items(doc_name):
-	manufacture_method_details_raw_items = frappe.db.sql("""select * from `tabPch Manufacturing Method Details Items` where parent = %s""",(doc_name), as_dict=1)
-	return manufacture_method_details_raw_items
 
 @frappe.whitelist()
 def get_child_doc_data(doc_type,parent):
@@ -65,7 +76,7 @@ def get_child_doc_data(doc_type,parent):
 @frappe.whitelist()
 def get_wh_ac_to_location(location_name,wh_type,process):
     wh_name_dic = frappe.db.sql("""select outbound_warehouse,inbound_warehouse from `tabPch Locations Child` where parent = %s and process_name = %s """,(location_name,process), as_dict=1)
-    return wh_name_dic[0][wh_type]
+    return wh_name_dic[0][wh_type] if wh_name_dic else None
 
 #Ak
 @frappe.whitelist()

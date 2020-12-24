@@ -1,6 +1,19 @@
 // Copyright (c) 2020, Frappe and contributors
 // For license information, please see license.txt
 
+//if the method is choosen it will filter according to method else all Pch Manufacturing Method Details id will come in dropdwon
+cur_frm.set_query('start_process', function() {
+										 var method_id = cur_frm.doc.manufacturing_method;
+										 if(method_id){
+											 console.log("start_process query working if------------");
+											 return {
+					                 "filters": [
+					                     ['Pch Manufacturing Method Details', 'pch_method', '=', method_id]
+					                 ]
+					             }
+										 }
+				         });
+
 frappe.ui.form.on('Pch Manufacturing Record', {
 	refresh: function(frm) {
 
@@ -28,10 +41,11 @@ frappe.ui.form.on("Pch Manufacturing Record", "manufacturing_method", function(f
 									for (var i=0;i<method_doc_data.length;i++){
 									var child = cur_frm.add_child("method_items");
 									frappe.model.set_value(child.doctype, child.name, "item_made", method_doc_data[i]['item_made']);
+									frappe.model.set_value(child.doctype, child.name, "item_name", method_doc_data[i]['item_name']);
+									frappe.model.set_value(child.doctype, child.name, "qty", method_doc_data[i]['qty']);
+									frappe.model.set_value(child.doctype, child.name, "stock_uom", method_doc_data[i]['stock_uom']);
 									frappe.model.set_value(child.doctype, child.name, "qty_made_type", method_doc_data[i]['qty_made_type']);
 									frappe.model.set_value(child.doctype, child.name, "qty_uom", method_doc_data[i]['qty_uom']);
-									frappe.model.set_value(child.doctype, child.name, "qty_made", method_doc_data[i]['qty_made']);
-									frappe.model.set_value(child.doctype, child.name, "stock_uom", method_doc_data[i]['stock_uom']);
 									frappe.model.set_value(child.doctype, child.name, "conversion_factor", method_doc_data[i]['conversion_factor']);
 									frappe.model.set_value(child.doctype, child.name, "operand", method_doc_data[i]['operand']);
 									}//end of for loop...
@@ -43,22 +57,34 @@ frappe.ui.form.on("Pch Manufacturing Record", "manufacturing_method", function(f
 
 });
 
-
 frappe.ui.form.on("Pch Manufacturing Record", "get_required_items", function(frm, cdt, cdn) {
 	//console.log("Button clicked");
 	//validation  start_process,end_process,manufacturing_method are mandatory to run this method
 	var start_process = cur_frm.doc.start_process;
 	var end_process = cur_frm.doc.end_process;
 	var method = cur_frm.doc.manufacturing_method;
+	var units_s_r = cur_frm.doc.units_s_r;
 
-	set_start_end_process_raw_materials(start_process,end_process,method)
+	set_start_end_process_raw_materials(start_process,end_process,method,units_s_r)
+});
+
+frappe.ui.form.on("Pch Manufacturing Record", "get_processs", function(frm, cdt, cdn) {
+	//console.log("Button clicked");
+	//validation  start_process,end_process,manufacturing_method are mandatory to run this method
+	var start_process = cur_frm.doc.start_process;
+	var end_process = cur_frm.doc.end_process;
+	var method = cur_frm.doc.manufacturing_method;
+	var units_s_r = cur_frm.doc.units_s_r;
+
+	set_process_details(start_process,end_process,method,units_s_r)
 });
 
 
 //what if selected process or location has no wh details?
 frappe.ui.form.on("Pch Manufacturing Record", "start_process", function(frm, cdt, cdn) {
-	var location_name = cur_frm.doc.location;
 	var start_process_temp = cur_frm.doc.start_process;
+
+	var location_name = cur_frm.doc.location;
 	if (location_name && start_process_temp){
 		var process_name = get_process_name(start_process_temp)
 		console.log("process_name",process_name)
@@ -82,9 +108,72 @@ frappe.ui.form.on("Pch Manufacturing Record","end_process",function(frm,cdt,cdn)
 	}
 });
 
+//Process Cost Details child_table_field_trigger
+
+frappe.ui.form.on("Pch MR  Child Process", {
+labour_rate_per_unit: function (frm, cdt, cdn) {
+		console.log("child_tanle_triggers is working");
+		var row = locals[cdt][cdn];
+		var labour_rate_per_unit_temp = row.labour_rate_per_unit;
+		console.log("labour_rate_per_unit_temp"+labour_rate_per_unit_temp);
+		if(labour_rate_per_unit_temp){
+			var units_s_r = cur_frm.doc.units_s_r ;
+			var labour_amount = labour_rate_per_unit_temp * units_s_r
+			row.labour_amount = labour_amount ;
+      refresh_field("labour_amount");
+			refresh_field(frm.doc.process_items);
+		}
+
+	}
+
+});
+/*
+frappe.ui.form.on("Process Cost Details", {
+	console.log("child_table_triggers parent is working");
+labour_rate_per_unit: function (frm, doctype, name) {
+		console.log("child_table_triggers  field is working");
+
+	}
+
+});
+*/
 
 
-function set_start_end_process_raw_materials(start_process,end_process,method){
+
+function set_process_details(start_process,end_process,method,units_s_r){
+	console.log("method",method)
+
+	frappe.call({
+		method: 'bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.get_start_end_p_process_details',
+		args: {
+		   "start_process":start_process,
+			 "end_process":end_process,
+			 "method":method
+		},
+		async: false,
+		callback: function(r) {
+			 if (r.message) {
+				console.log("process json..." + JSON.stringify(r.message));
+				cur_frm.clear_table("process_items");
+				var items_list = r.message;
+				for (var i=0;i<items_list.length;i++){
+				var total_qty = units_s_r *  items_list[i]['qty']
+				var child = cur_frm.add_child("process_items");
+				console.log("sur items_list :"+i+" row"+JSON.stringify(items_list[i]))
+				frappe.model.set_value(child.doctype, child.name, "process", items_list[i]['pch_process']);
+				frappe.model.set_value(child.doctype, child.name, "process_order", items_list[i]['process_order']);
+				frappe.model.set_value(child.doctype, child.name, "turnaround_time", items_list[i]['turnaround_time']);
+				frappe.model.set_value(child.doctype, child.name, "touch_points", items_list[i]['touch_points']);
+				//frappe.model.set_value(child.doctype, child.name, "dispatched_quantity_in_uom", items_list[i]['operand']);
+				}//end of for loop...
+				refresh_field("process_items");
+				}
+			//console.log("supplier_criticality---11111----" + supplier_criticality);
+		}
+    });
+}
+
+function set_start_end_process_raw_materials(start_process,end_process,method,units_s_r){
 	console.log("method",method)
 
 	frappe.call({
@@ -101,10 +190,14 @@ function set_start_end_process_raw_materials(start_process,end_process,method){
 				cur_frm.clear_table("req_items");
 				var items_list = r.message;
 				for (var i=0;i<items_list.length;i++){
+				var total_qty = units_s_r *  items_list[i]['qty']
 				var child = cur_frm.add_child("req_items");
+				console.log("sur items_list :"+i+" row"+JSON.stringify(items_list[i]))
 				frappe.model.set_value(child.doctype, child.name, "item_code", items_list[i]['item_code']);
-				//frappe.model.set_value(child.doctype, child.name, "consumption_type", items_list[i]['qty_made_type']);
+				frappe.model.set_value(child.doctype, child.name, "item_name", items_list[i]['item_name']);
+				frappe.model.set_value(child.doctype, child.name, "qty_per_unit_made", items_list[i]['qty']);
 				frappe.model.set_value(child.doctype, child.name, "qty_uom", items_list[i]['uom']);
+				frappe.model.set_value(child.doctype, child.name, "total_qty",total_qty);
 				frappe.model.set_value(child.doctype, child.name, "stock_uom", items_list[i]['stock_uom']);
 				frappe.model.set_value(child.doctype, child.name, "conversion_factor", items_list[i]['conversion_factor']);
 				frappe.model.set_value(child.doctype, child.name, "operand", items_list[i]['operand']);
@@ -196,3 +289,8 @@ function get_process_name(mmd_id){
     });
 		return process
 }
+
+
+//
+//get_required_items button -Manufacturing Method,start_process,end_process,units_s_r validation neede
+//get_process button -Manufacturing Method,start_process,end_process,units_s_r validation neede
