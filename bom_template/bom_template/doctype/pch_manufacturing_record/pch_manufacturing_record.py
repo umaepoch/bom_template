@@ -71,8 +71,8 @@ def get_wh_ac_to_location(location_name,wh_type,process):
 @frappe.whitelist()
 def validate_start_and_end_process(start_process,end_process):
 	flag=1;
-	st_list=frappe.db.sql("""select `process_order` as `start_process_order` from  `tabPch Manufacturing Method Details` where meth_pro_con=%s""",(start_process),as_dict=1);
-	en_list=frappe.db.sql("""select `process_order` as `end_process_order`  from  `tabPch Manufacturing Method Details` where meth_pro_con=%s""",(end_process),as_dict=1);
+	st_list=frappe.db.sql("""select `process_order` as `start_process_order` from  `tabPch Manufacturing Method Details` where name=%s""",(start_process),as_dict=1);
+	en_list=frappe.db.sql("""select `process_order` as `end_process_order`  from  `tabPch Manufacturing Method Details` where name=%s""",(end_process),as_dict=1);
 	start_process_order_value=st_list[0]["start_process_order"];
 	end_process_order_value=en_list[0]["end_process_order"];
 	if(start_process_order_value > end_process_order_value):
