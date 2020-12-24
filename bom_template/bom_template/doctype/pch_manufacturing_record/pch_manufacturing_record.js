@@ -13,6 +13,18 @@ cur_frm.set_query('start_process', function() {
 					             }
 										 }
 				         });
+cur_frm.set_query('end_process', function() {
+										 var method_id = cur_frm.doc.manufacturing_method;
+										 if(method_id){
+											 console.log("start_process query working if------------");
+											 return {
+					                 "filters": [
+					                     ['Pch Manufacturing Method Details', 'pch_method', '=', method_id]
+					                 ]
+					             }
+										 }
+				         });
+
 
 frappe.ui.form.on('Pch Manufacturing Record', {
 	refresh: function(frm) {
