@@ -110,7 +110,7 @@ frappe.ui.form.on("Pch Manufacturing Record","end_process",function(frm,cdt,cdn)
 
 //Process Cost Details child_table_field_trigger
 
-frappe.ui.form.on("Pch MR  Child Process", {
+frappe.ui.form.on("Pch Mrec  Child Process", {
 labour_rate_per_unit: function (frm, cdt, cdn) {
 		console.log("child_tanle_triggers is working");
 		var row = locals[cdt][cdn];
@@ -160,7 +160,7 @@ function set_process_details(start_process,end_process,method,units_s_r){
 				var total_qty = units_s_r *  items_list[i]['qty']
 				var child = cur_frm.add_child("process_items");
 				console.log("sur items_list :"+i+" row"+JSON.stringify(items_list[i]))
-				frappe.model.set_value(child.doctype, child.name, "process", items_list[i]['pch_process']);
+				frappe.model.set_value(child.doctype, child.name, "pch_process", items_list[i]['pch_process']);
 				frappe.model.set_value(child.doctype, child.name, "process_order", items_list[i]['process_order']);
 				frappe.model.set_value(child.doctype, child.name, "turnaround_time", items_list[i]['turnaround_time']);
 				frappe.model.set_value(child.doctype, child.name, "touch_points", items_list[i]['touch_points']);
