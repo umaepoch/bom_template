@@ -32,15 +32,23 @@ def get_process_list():
 	
 	
 @frappe.whitelist()
-def get_process_order_values(process_order):
-	
-	pr_order_list=frappe.db.get_all("Pch Manufacturing Method Details",fields=["process_order"],as_list=True);
+def get_process_order_values(process_order,method_name):
+	flag=1;
+	#po_order_list=frappe.db.get_all("Pch Manufacturing Method Details",fields=["process_order"],as_list=True);
+	po_order_list=frappe.db.sql("""select process_order,pch_method from `tabPch Manufacturing Method Details`where 			      pch_method=%s""",(method_name),as_dict=1);
 	print("Here");
-	for process in po_order_list:
-		if(process_order==process):
-			flag=0;
-			print('This process order has already been used');
-		else:
-			flag=1;
+	length=len(po_order_list);
+	if(length==0):
+		flag=1;
+	else:
+		for process in po_order_list:
+			print(process);	
+			process_ordr=process.process_order;
+			if(process_ordr==process_order):
+				print('Duplicate');
+				flag=0;
+			
+		
 	return flag
+	
 	

@@ -39,21 +39,24 @@ frappe.ui.form.on("Pch Manufacturing Method Details", "pch_process", function(fr
 //Process Order validation:To ensure the Process order is unique across all methods
 frappe.ui.form.on("Pch Manufacturing Method Details","process_order",function (frm,cdt,cdn){
 
-	var process_order=cur.frm.doc.process_order;
+	var process_order=cur_frm.doc.process_order;
+	var method_name=cur_frm.doc.pch_method;
 	console.log('Check');
+	console.log(process_order);
+	console.log(method_name);
 	var unique_flag;
-	unique_flag=process_order_validation(process_order);
-	consol
-	if(unique_flag===0){
+	unique_flag=process_order_validation(process_order,method_name);
+	console.log(unique_flag);
+	if(unique_flag==0){
 	
-		frappe.msgprint('This Process Order has already been used for a Method Process Combination, please enter a new process order number');
-		//cur.frm.doc.process_order=0;
+		frappe.msgprint('This Process Order has already been set for a Method Process Combination, please enter a new Process Order number');
+		cur_frm.set_value("process_order",null);
 	}
 	
 });
 
 //Process order validation function
-function process_order_validation(process_order){
+function process_order_validation(process_order,method_name){
 	
 	var is_unique_process_order;
 	frappe.call({
@@ -61,7 +64,8 @@ function process_order_validation(process_order){
 		'bom_template.bom_template.doctype.pch_manufacturing_method_details.pch_manufacturing_method_details.get_process_order_values',
 		async:false,
 		args:{
-			"process_order":process_order
+			"process_order":process_order,
+			"method_name":method_name
 		},
 		
 		callback:function(r){
