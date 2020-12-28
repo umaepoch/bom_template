@@ -44,7 +44,7 @@ def check_unique_warehouse(warehouse_name,warehouse_type):
 				else:
 					pass;
 			else:
-				#print("Invalid warehouse type");
+				print("Invalid warehouse type");
 	#print(check);
 	return check
 
