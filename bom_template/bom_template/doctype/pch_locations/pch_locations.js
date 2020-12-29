@@ -175,9 +175,9 @@ frappe.ui.form.on("Pch Locations Child",{
 });
 
 frappe.ui.form.on("Pch Locations",{
-company_name:function(frm,cdt,cdn){
+company:function(frm,cdt,cdn){
 
-  var comp=cur_frm.doc.company_name;
+  var comp=cur_frm.doc.company;
   var ww=get_warehouses_list(comp);
   //console.log(ww);
   
