@@ -77,7 +77,7 @@ callback:function(r){
 	{
 	
 		var child=cur_frm.add_child("items");
-		console.log(child)
+		//console.log(child)
 		frappe.model.set_value(child.doctype,child.name,"item_code",l1[i]["item_made"]);
 		frappe.model.set_value(child.doctype,child.name,"uom",l1[i]["qty_uom"]);
 		frappe.model.set_value(child.doctype,child.name,"qty",l1[i]["qty_made"]);
@@ -90,12 +90,12 @@ refresh_field("items");
 	
 });
 
-frappe.ui.form.on("Pch Manufacturing Method Details","item",function(frm,cdt,cdn){
+frappe.ui.form.on("Pch Manufacturing Method Details","item_code",function(frm,cdt,cdn){
 	
 	
 	
 	
-	var item_chosen=cur_frm.doc.item;
+	var item_chosen=cur_frm.doc.item_code;
 	var item_methods=get_methods(item_chosen);
 	//console.log(item_methods);
 	//var len=item_methods.length;
