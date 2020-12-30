@@ -55,6 +55,77 @@ frappe.ui.form.on("Pch Manufacturing Method Details","process_order",function (f
 	
 });
 
+
+frappe.ui.form.on("Pch Manufacturing Method Details","pch_method",function(frm,cdt,cdn){
+
+	var l1;
+	var method_name=cur_frm.doc.pch_method;
+	
+	frappe.call({
+		method:"bom_template.bom_template.doctype.pch_manufacturing_method_details.pch_manufacturing_method_details.get_item_details",
+args:{
+
+	"parent":method_name
+},
+async:false,
+callback:function(r){
+
+
+	l1=r.message;
+	//console.log(l1);
+	for(var i=0;i<l1.length;i++)
+	{
+	
+		var child=cur_frm.add_child("items");
+		console.log(child)
+		frappe.model.set_value(child.doctype,child.name,"item_code",l1[i]["item_made"]);
+		frappe.model.set_value(child.doctype,child.name,"uom",l1[i]["qty_uom"]);
+		frappe.model.set_value(child.doctype,child.name,"qty",l1[i]["qty_made"]);
+		
+	}
+refresh_field("items");
+
+}
+});
+	
+});
+
+frappe.ui.form.on("Pch Manufacturing Method Details","item",function(frm,cdt,cdn){
+	
+	
+	
+	
+	var item_chosen=cur_frm.doc.item;
+	var item_methods=get_methods(item_chosen);
+	//console.log(item_methods);
+	//var len=item_methods.length;
+	//console.log(item_methods[0]["parent"]);
+	if(item_methods.length===1){
+		
+		cur_frm.set_value("pch_method",item_methods[0]);
+	}
+
+	else
+	{
+	
+			cur_frm.set_query("pch_method", function(frm, cdt, cdn) {
+//console.log(wh_n);
+return {
+"filters": [
+["Pch Manufacturing Method", "name", "in", item_methods]
+
+
+
+]
+}
+});
+	
+	
+	}
+
+
+});
+
 //Process order validation function
 function process_order_validation(process_order,method_name){
 	
@@ -94,4 +165,26 @@ function process_validation_against_method(method_name,process_name){
 		}
     });
 		return process_flag;
+}
+
+function get_methods(item_made){
+	var methods=[];
+	frappe.call({
+	
+		method:'bom_template.bom_template.doctype.pch_manufacturing_method_details.pch_manufacturing_method_details.get_method_based_on_item',
+async:false,	
+args:{
+
+	"item_made":item_made
+},
+	
+	
+	
+	callback:function(r){
+	
+	methods=r.message;
+
+}
+});
+	return methods
 }

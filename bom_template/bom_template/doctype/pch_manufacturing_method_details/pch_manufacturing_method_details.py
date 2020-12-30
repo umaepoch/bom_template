@@ -50,5 +50,24 @@ def get_process_order_values(process_order,method_name):
 			
 		
 	return flag
+
+@frappe.whitelist()
+def get_item_details(parent):
+	item_dict=frappe.db.sql("""select item_made,qty_made,qty_uom from `tabPch Manufacturing Method Child` where parent=%s""",(parent),as_dict=1);
+	#print(item_dict);
+	return item_dict
+	
+@frappe.whitelist()
+def get_method_based_on_item(item_made):
+	method_list=frappe.db.sql("""select parent from `tabPch Manufacturing Method Child` where item_made=%s""",(item_made),as_dict=1);
+	methods=[];
+	length=len(method_list);
+	if(length==1):
+		methods.append(method_list[0]["parent"]);
+	else:
+		for method in method_list:
+			methods.append(method.parent);
+	#print(methods);
+	return methods
 	
 	
