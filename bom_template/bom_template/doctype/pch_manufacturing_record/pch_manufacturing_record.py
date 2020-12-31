@@ -198,9 +198,10 @@ def make_transfer(trans_entity):
 def create_stock_entry(se_entity):
 	#print ("from create_stock_entry se_entity :",se_entity)
 	se = frappe.new_doc("Stock Entry")
-	se.purpose = se_entity.get("action")
+	#se.purpose = se_entity.get("action")
 	#se.company = "Epoch Consulting"
 	se.company = "Shree Rakhi"
+	se.stock_entry_type = se_entity.get("action")
 
 	se.set('items', [])
 	for item in se_entity.get("items_list") :
