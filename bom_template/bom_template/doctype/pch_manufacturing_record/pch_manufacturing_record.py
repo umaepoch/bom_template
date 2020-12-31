@@ -199,7 +199,8 @@ def create_stock_entry(se_entity):
 	#print ("from create_stock_entry se_entity :",se_entity)
 	se = frappe.new_doc("Stock Entry")
 	se.purpose = se_entity.get("action")
-	se.company = "Epoch Consulting"
+	#se.company = "Epoch Consulting"
+	se.company = "Shree Rakhi"
 
 	se.set('items', [])
 	for item in se_entity.get("items_list") :
