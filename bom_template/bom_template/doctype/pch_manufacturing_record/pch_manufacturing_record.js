@@ -13,6 +13,7 @@ cur_frm.set_query('start_process', function() {
 					             }
 										 }
 				         });
+
 cur_frm.set_query('end_process', function() {
 										 var method_id = cur_frm.doc.manufacturing_method;
 										 if(method_id){
@@ -31,6 +32,68 @@ frappe.ui.form.on('Pch Manufacturing Record', {
 
 	}
 });
+
+/*
+1.material issue
+2. Material Receipt(if 	Start Process	 process order <=1
+3.Material transfer
+*/
+
+//on_submit
+/*
+frappe.ui.form.on("Pch Manufacturing Record", "refresh", function(frm, cdt, cdn) {
+	console.log("on_submit working")
+	var m_record_type = cur_frm.doc.manufacturing_record_type ;
+	if(m_record_type == "Send Material for Manufacturing"){
+		send_material_for_manufacturing(cur_frm.doc)
+		//validation for issue
+	}
+});
+*/
+
+//on_submit
+
+frappe.ui.form.on("Pch Manufacturing Record", "on_submit", function(frm, cdt, cdn) {
+	console.log("on_submit working")
+	var m_record_type = cur_frm.doc.manufacturing_record_type ;
+	if(m_record_type == "Send Material for Manufacturing"){
+		send_material_for_manufacturing(cur_frm.doc)
+		//validation for issue
+	}
+});
+
+function send_material_for_manufacturing(doc_object){
+	var req_items = doc_object.req_items
+	var method_items = doc_object.method_items
+	var outbound_warehouse =  doc_object.outbound_warehouse
+	var target_warehouse =  doc_object.target_warehouse //subContractor wh
+	var location =  doc_object.location //subContractor wh
+	var start_process =  doc_object.start_process
+
+	var entity ={
+		"req_items":req_items,
+		"method_items":method_items,
+		"outbound_warehouse":outbound_warehouse,
+		"target_warehouse":target_warehouse,
+		"start_process":start_process,
+		"location":location
+	}
+
+	frappe.call({
+			method: "bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.send_material_for_manufacturing",
+			args: {
+		 "entity":entity
+			},
+			async: false,
+			callback: function(r) {
+					if (r.message) {
+							console.log("method_doc_data" + JSON.stringify(r.message));
+							}
+			} //end of callback fun..
+	}) //end of frappe call..
+
+}
+
 
 frappe.ui.form.on("Pch Manufacturing Record", "manufacturing_method", function(frm, cdt, cdn) {
     var method_id = cur_frm.doc.manufacturing_method;
@@ -54,7 +117,7 @@ frappe.ui.form.on("Pch Manufacturing Record", "manufacturing_method", function(f
 									var child = cur_frm.add_child("method_items");
 									frappe.model.set_value(child.doctype, child.name, "item_made", method_doc_data[i]['item_made']);
 									frappe.model.set_value(child.doctype, child.name, "item_name", method_doc_data[i]['item_name']);
-									frappe.model.set_value(child.doctype, child.name, "qty", method_doc_data[i]['qty']);
+									frappe.model.set_value(child.doctype, child.name, "qty_made", method_doc_data[i]['qty_made']);
 									frappe.model.set_value(child.doctype, child.name, "stock_uom", method_doc_data[i]['stock_uom']);
 									frappe.model.set_value(child.doctype, child.name, "qty_made_type", method_doc_data[i]['qty_made_type']);
 									frappe.model.set_value(child.doctype, child.name, "qty_uom", method_doc_data[i]['qty_uom']);
