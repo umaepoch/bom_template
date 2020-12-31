@@ -13,6 +13,34 @@ frappe.ui.form.on("Pch Manufacturing Method Details", "pch_method", function(frm
 		cur_frm.set_value("meth_pro_con", concat_val);
 	}
 	//cur_frm.set_value("target_warehouse",wh_json.outbound_warehouse);
+	
+	
+		//Ak
+	var l1;
+	//var method_name=cur_frm.doc.pch_method;
+	var item_made=cur_frm.doc.item_code;
+	console.log(item_made);
+	
+	l1=get_child_items(method_name,item_made);
+	
+	if(method_name)
+	
+	{
+		var child=cur_frm.add_child("items");
+		console.log(child)
+		frappe.model.set_value(child.doctype,child.name,"item_code",l1[0]["item_made"]);
+		frappe.model.set_value(child.doctype,child.name,"uom",l1[0]["qty_uom"]);
+		frappe.model.set_value(child.doctype,child.name,"qty",l1[0]["qty_made"]);
+		refresh_field("items");
+	}
+
+
+	else{
+	
+		cur_frm.clear_table("items"); 
+		cur_frm.refresh_fields();
+	
+	}
 });
 
 
@@ -56,39 +84,7 @@ frappe.ui.form.on("Pch Manufacturing Method Details","process_order",function (f
 });
 
 
-frappe.ui.form.on("Pch Manufacturing Method Details","pch_method",function(frm,cdt,cdn){
 
-	var l1;
-	var method_name=cur_frm.doc.pch_method;
-	
-	frappe.call({
-		method:"bom_template.bom_template.doctype.pch_manufacturing_method_details.pch_manufacturing_method_details.get_item_details",
-args:{
-
-	"parent":method_name
-},
-async:false,
-callback:function(r){
-
-
-	l1=r.message;
-	//console.log(l1);
-	for(var i=0;i<l1.length;i++)
-	{
-	
-		var child=cur_frm.add_child("items");
-		//console.log(child)
-		frappe.model.set_value(child.doctype,child.name,"item_code",l1[i]["item_made"]);
-		frappe.model.set_value(child.doctype,child.name,"uom",l1[i]["qty_uom"]);
-		frappe.model.set_value(child.doctype,child.name,"qty",l1[i]["qty_made"]);
-		
-	}
-refresh_field("items");
-
-}
-});
-	
-});
 
 frappe.ui.form.on("Pch Manufacturing Method Details","item_code",function(frm,cdt,cdn){
 	
@@ -100,31 +96,59 @@ frappe.ui.form.on("Pch Manufacturing Method Details","item_code",function(frm,cd
 	//console.log(item_methods);
 	//var len=item_methods.length;
 	//console.log(item_methods[0]["parent"]);
-	if(item_methods.length===1){
+	if(item_chosen)
+	{
+		if(item_methods.length===1){
 		
 		cur_frm.set_value("pch_method",item_methods[0]);
-	}
+		}
 
-	else
-	{
+		else
+		{
 	
 			cur_frm.set_query("pch_method", function(frm, cdt, cdn) {
 //console.log(wh_n);
-return {
-"filters": [
-["Pch Manufacturing Method", "name", "in", item_methods]
+	return {
+	"filters": [
+	["Pch Manufacturing Method", "name", "in", item_methods]
 
 
 
-]
-}
+	]
+	}
 });
 	
+	
+	}
+	}
+	else
+	{
+		cur_frm.set_value("pch_method",null);
 	
 	}
 
 
 });
+
+function get_child_items(parent,item_made){
+
+	var l1;
+	frappe.call({
+		method:"bom_template.bom_template.doctype.pch_manufacturing_method_details.pch_manufacturing_method_details.get_method_details",
+args:{
+
+	"parent":parent,
+	"item_made":item_made
+},
+async:false,
+callback:function(r){
+
+
+	l1=r.message;
+}
+});
+	return l1;
+}
 
 //Process order validation function
 function process_order_validation(process_order,method_name){
