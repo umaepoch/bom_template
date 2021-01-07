@@ -22,6 +22,24 @@ frappe.ui.form.on("Pch Manufacturing Method","method_makes",function(frm,cdt,cdn
 //uom trigger for conversio factor (Please Select Item first)
 //child table field(add upto 100%)
 
+frappe.ui.form.on("Pch Manufacturing Method","method_makes",function(frm,cdt,cdn){
+
+	var items=get_all_items();
+	//console.log(items);
+	cur_frm.set_query("master_item",  function(frm, cdt, cdn) {
+//console.log(wh_n);
+return {
+"filters": [
+["Item", "name", "in", items]
+
+
+
+]
+}
+});
+
+});
+
 frappe.ui.form.on("Pch Manufacturing Method Child", {
 item_made: function (frm, cdt, cdn) {
 		console.log("child_tanle_triggers is working");
@@ -153,4 +171,25 @@ function get_stock_uom(item_code){
         }
     });
 		return stock_uom
+}
+function get_all_items(){
+
+	var item_list;
+	frappe.call({
+	
+		method:"bom_template.bom_template.doctype.pch_manufacturing_method.pch_manufacturing_method.get_items",
+		async:false,
+		callback:function(r){
+		
+			item_list=r.message;		
+		
+		}
+		
+		
+	
+	});
+	
+	return item_list
+
+
 }

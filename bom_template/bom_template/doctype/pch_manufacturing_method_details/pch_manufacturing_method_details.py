@@ -51,11 +51,6 @@ def get_process_order_values(process_order,method_name):
 		
 	return flag
 
-@frappe.whitelist()
-def get_item_details(parent):
-	item_dict=frappe.db.sql("""select item_made,qty_made,qty_uom from `tabPch Manufacturing Method Child` where parent=%s""",(parent),as_dict=1);
-	#print(item_dict);
-	return item_dict
 	
 @frappe.whitelist()
 def get_method_based_on_item(item_made):
@@ -69,5 +64,28 @@ def get_method_based_on_item(item_made):
 			methods.append(method.parent);
 	#print(methods);
 	return methods
+
 	
+@frappe.whitelist()
+def get_method_details(parent,item_made):
+	item_dict=[];
+	manufacturing_method_list=frappe.db.get_all("Pch Manufacturing Method",fields=["method_name","method_makes","master_item"]);
+	for m in manufacturing_method_list:
+		#print(m.method_makes);
+		if(m.method_name== parent):
+			if(m.method_makes=='Multiple Items'):
+				#print(m.method_makes);
+				item_dict=frappe.db.sql("""select item_made,qty_made,qty_uom from `tabPch Manufacturing Method Child` where parent=%s and item_made=%s""",(parent,m.master_item),as_dict=1);
+				#print("multiple");
+				break;
+			#print(item_dict,"Here");
+			elif(m.method_makes=='Single Item'):
+				item_dict=frappe.db.sql("""select item_made,qty_made,qty_uom from `tabPch Manufacturing Method Child` where parent=%s and item_made=%s """,(parent,item_made),as_dict=1);
+				#print('Single');
+				break;
+			#print(item_dict,"Single");
+			else:
+				pass;
+			
+	return item_dict;
 	
