@@ -60,7 +60,46 @@ frappe.ui.form.on("Pch Manufacturing Record", "on_submit", function(frm, cdt, cd
 		send_material_for_manufacturing(cur_frm.doc)
 		//validation for issue
 	}
+
+	if(m_record_type == "Receive Material from Manufacturing"){
+		receive_material_for_manufacturing(cur_frm.doc)
+	}
 });
+
+function receive_material_for_manufacturing(doc_object){
+	var req_items = doc_object.req_items
+	var method_items = doc_object.method_items
+	var outbound_warehouse =  doc_object.outbound_warehouse
+	var target_warehouse =  doc_object.target_warehouse //subContractor wh
+	var location =  doc_object.location //subContractor wh
+	var start_process =  doc_object.start_process
+	var receiving_warehouse =  doc_object.receiving_warehouse
+
+	var entity ={
+		"req_items":req_items,
+		"method_items":method_items,
+		"outbound_warehouse":outbound_warehouse,
+		"target_warehouse":target_warehouse,
+		"receiving_warehouse":receiving_warehouse,
+		"start_process":start_process,
+		"location":location
+	}
+	console.log("entity" + JSON.stringify(entity));
+
+
+	frappe.call({
+			method: "bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.receive_material_for_manufacturing",
+			args: {
+		 "entity":entity
+			},
+			async: false,
+			callback: function(r) {
+					if (r.message) {
+							console.log("method_doc_data receive_material_for_manufacturing" + JSON.stringify(r.message));
+							}
+			} //end of callback fun..
+	}) //end of frappe call..
+} //end of receive_material_for_manufacturing
 
 function send_material_for_manufacturing(doc_object){
 	var req_items = doc_object.req_items

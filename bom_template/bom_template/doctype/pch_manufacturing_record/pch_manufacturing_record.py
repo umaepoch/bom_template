@@ -198,10 +198,10 @@ def make_transfer(trans_entity):
 def create_stock_entry(se_entity):
 	#print ("from create_stock_entry se_entity :",se_entity)
 	se = frappe.new_doc("Stock Entry")
-	#se.purpose = se_entity.get("action")
-	#se.company = "Epoch Consulting"
-	se.company = "Shree Rakhi"
-	se.stock_entry_type = se_entity.get("action")
+	se.purpose = se_entity.get("action")
+	se.company = "Epoch Consulting"
+	#se.company = "Shree Rakhi"
+	#se.stock_entry_type = se_entity.get("action")
 
 	se.set('items', [])
 	for item in se_entity.get("items_list") :
@@ -223,3 +223,32 @@ def create_stock_entry(se_entity):
 	se.submit()
 	frappe.db.commit()
 	return se.name
+
+@frappe.whitelist()
+def receive_material_for_manufacturing(entity):
+	entity = json.loads(entity)
+
+	#make_transfer
+	#from method_item table  Subcontractor Warehouse== sourch wh and Receiving Warehouse==
+	transfer_items_list = []
+	for i_row in entity.get("method_items"):
+		item_dic = {
+		"item_code" :i_row.get("item_made") ,
+		"qty":i_row.get("qty_made"),
+		"uom":i_row.get("qty_uom"),
+		"conversion_factor" : i_row.get("conversion_factor"),
+		"s_wh":entity.get("target_warehouse"), #subcontractor wh
+		"t_wh":entity.get("receiving_warehouse") #receiving_warehouse
+		}
+		transfer_items_list.append(item_dic)
+
+	se_trans_entity  = {"action" :"Material Transfer","items_list":transfer_items_list}
+	se_transfer = create_stock_entry(se_trans_entity)
+	if se_transfer:
+		return se_transfer
+	else:
+		"bug in transfer"
+
+
+
+    #ability to create purchase invoice in future
