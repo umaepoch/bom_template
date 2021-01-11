@@ -44,18 +44,17 @@ def get_pro_order_wise_process_details(start_process,end_process,method):
 	where
 	mmd.process_order>=%s and mmd.process_order<= %s and mmd.pch_method= %s order by mmd.process_order asc""",(start_process_pro_ord_no,end_process_pro_ord_no,method), as_dict=1)
 
-
 	return mmd_process_details
+
 
 def get_pro_order_wise_manufacture_method_details_raw_items(start_process,end_process,method):
 	start_process_pro_ord_no = frappe.db.get_value("Pch Manufacturing Method Details", {"name":start_process},"process_order")
 	end_process_pro_ord_no = frappe.db.get_value("Pch Manufacturing Method Details", {"name":end_process},"process_order")
 
 	manufacture_method_details_raw_items = frappe.db.sql("""select
-	mmd.name,mmdi.item_code,mmdi.item_name,mmdi.qty_uom,mmdi.qty_per_unit_made,mmdi.total_qty,mmdi.qty_of_raw_material_being_sent,mmdi.consumption_type,mmdi.stock_uom,mmdi.conversion_factor,mmdi.operand,mmdi.qty_in_stock_uom,mmdi.dispatched_quantity_in_uom
+	mmd.name,mmdi.item_code,mmdi.item_name,mmdi.qty,mmdi.uom,mmdi.stock_uom,mmdi.conversion_factor,mmdi.operand,mmdi.qty_in_stock_uom
 	from
-	`tabPch Manufacturing Method Details` mmd,`tabPch Manufacturing Method Details RM Child`
- mmdi
+	`tabPch Manufacturing Method Details` mmd,`tabPch Manufacturing Method Details Items` mmdi
 	where
 	mmd.name=mmdi.parent and process_order>=%s and process_order<= %s and pch_method= %s """,(start_process_pro_ord_no,end_process_pro_ord_no,method), as_dict=1)
 
@@ -96,7 +95,7 @@ def validate_start_and_end_process(start_process,end_process):
 @frappe.whitelist()
 def send_material_for_manufacturing(entity):
 	entity = json.loads(entity)
-	difference_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"difference_account")
+	item_payload_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"item_payload_account")
 
 	"""
 	smfm_transaction_order =[]
@@ -122,7 +121,7 @@ def send_material_for_manufacturing(entity):
 		"conversion_factor":i_row.get("conversion_factor"),
 		"t_wh":None,
 		"s_wh":raw_material_warehouse,
-		"difference_account":difference_account
+		"item_payload_account":item_payload_account
 		}
 		issue_items_list.append(item_dic)
 	se_issue_entity  = {"action" :"Material Issue","items_list":issue_items_list}
@@ -140,11 +139,11 @@ def send_material_for_manufacturing(entity):
 		"s_wh":entity.get("outbound_warehouse"),
 		"t_wh":entity.get("target_warehouse")
 		}
-		expense_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"expense_account")
-		trans_entity["add_amount"] = entity.get("subcontracting_rate")
-		trans_entity["expense_account"] = expense_account
+		labour_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"labour_account")
+		trans_entity["labour_account"] = labour_account
 		trans_entity["isAdditionCost"] = 1
-		trans_entity["difference_account"] = difference_account
+		trans_entity["add_amount"] = frappe.db.get_value("Stock Entry", {"name":se_issue},"total_outgoing_value")
+		trans_entity["item_payload_account"] = item_payload_account
 		#transfer is must
 
 		start_process_pro_ord_no =int (start_process_pro_ord_no)
@@ -164,7 +163,7 @@ def send_material_for_manufacturing(entity):
 				"conversion_factor" : i_row.get("conversion_factor"),
 				"t_wh":entity.get("outbound_warehouse"),
 				"s_wh":None,
-				"difference_account":difference_account
+				"item_payload_account":item_payload_account
 				}
 				receipt_items_list.append(item_dic)
 			se_rec_entity  = {"action" :"Material Receipt","items_list":receipt_items_list}
@@ -199,12 +198,12 @@ def make_transfer(trans_entity):
 		"conversion_factor" : i_row.get("conversion_factor"),
 		"s_wh":trans_entity.get("s_wh"),
 		"t_wh":trans_entity.get("t_wh"),
-		"difference_account":trans_entity.get("difference_account")
+		"item_payload_account":trans_entity.get("item_payload_account")
 		}
 		transfer_items_list.append(item_dic)
 	se_trans_entity  = {"action" :"Material Transfer","items_list":transfer_items_list}
 	se_trans_entity["add_amount"] = trans_entity.get("add_amount")
-	se_trans_entity["expense_account"] = trans_entity.get("difference_account") #only for send material for manufacturing
+	se_trans_entity["labour_account"] = trans_entity.get("item_payload_account") #only for send material for manufacturing
 	se_trans_entity["isAdditionCost"] = 1
 	se_transfer = create_stock_entry(se_trans_entity)
 	return se_transfer
@@ -225,7 +224,7 @@ def create_stock_entry(se_entity):
 		se_item.qty = item["qty"]
 		se_item.uom = item["uom"]
 		se_item.conversion_factor = item["conversion_factor"]
-		se_item.expense_account = item["difference_account"]  #dif acc
+		se_item.expense_account = item["item_payload_account"]  #dif acc
 		se_item.stock_uom = frappe.db.get_value("Item", {"name":item["item_code"]},"stock_uom")
 		if se_entity.get("action") == "Material Transfer":
 			se_item.s_warehouse =  item["s_wh"]
@@ -239,7 +238,7 @@ def create_stock_entry(se_entity):
 		se.set('additional_costs', [])
 		se_add_cost = se.append('additional_costs', {})
 		se_add_cost.description = "Manufacturing Record"
-		se_add_cost.expense_account = se_entity.get("expense_account")
+		se_add_cost.expense_account = se_entity.get("labour_account")
 		se_add_cost.amount = se_entity.get("add_amount")
 
 	se.save(ignore_permissions=True)
@@ -252,8 +251,8 @@ def create_stock_entry(se_entity):
 @frappe.whitelist()
 def receive_material_for_manufacturing(entity):
 	entity = json.loads(entity)
-	expense_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"expense_account")
-	difference_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"difference_account")
+	labour_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"labour_account")
+	item_payload_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"item_payload_account")
 
 
 	#make_transfer
@@ -267,7 +266,7 @@ def receive_material_for_manufacturing(entity):
 		"conversion_factor" : i_row.get("conversion_factor"),
 		"s_wh":entity.get("target_warehouse"), #subcontractor wh
 		"t_wh":entity.get("receiving_warehouse") ,#receiving_warehouse
-		"difference_account":difference_account
+		"item_payload_account":item_payload_account
 		}
 		transfer_items_list.append(item_dic)
 
@@ -275,7 +274,7 @@ def receive_material_for_manufacturing(entity):
 
 	se_trans_entity  = {"action" :"Material Transfer","items_list":transfer_items_list}
 	se_trans_entity["add_amount"] = entity.get("subcontracting_rate")
-	se_trans_entity["expense_account"] = expense_account
+	se_trans_entity["labour_account"] = labour_account
 	se_trans_entity["isAdditionCost"] = 1
 	se_transfer = create_stock_entry(se_trans_entity)
 	if se_transfer:
