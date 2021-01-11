@@ -52,10 +52,8 @@ def get_pro_order_wise_manufacture_method_details_raw_items(start_process,end_pr
 	end_process_pro_ord_no = frappe.db.get_value("Pch Manufacturing Method Details", {"name":end_process},"process_order")
 
 	manufacture_method_details_raw_items = frappe.db.sql("""select
-	mmd.name,mmdi.item_code,mmdi.item_name,mmdi.qty,mmdi.uom,mmdi.stock_uom,mmdi.conversion_factor,mmdi.operand,mmdi.qty_in_stock_uom
-	from
-	`tabPch Manufacturing Method Details` mmd,`tabPch Manufacturing Method Details Items` mmdi
-	where
+mmd.name,mmdi.item_code,mmdi.item_name,mmdi.qty_uom,mmdi.qty_per_unit_made,mmdi.total_qty,mmdi.qty_of_raw_material_being_sent,mmdi.consumption_type,mmdi.stock_uom,mmdi.conversion_factor,mmdi.operand,mmdi.qty_in_stock_uom,mmdi.dispatched_quantity_in_uom
+from`tabPch Manufacturing Method Details` mmd,`tabPch Manufacturing Method Details RM Child` mmdi where
 	mmd.name=mmdi.parent and process_order>=%s and process_order<= %s and pch_method= %s """,(start_process_pro_ord_no,end_process_pro_ord_no,method), as_dict=1)
 
 
