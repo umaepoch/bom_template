@@ -312,16 +312,17 @@ function set_start_end_process_raw_materials(start_process,end_process,method,un
 				var child = cur_frm.add_child("req_items");
 				console.log("sur items_list :"+i+" row"+JSON.stringify(items_list[i]))
 				frappe.model.set_value(child.doctype, child.name, "item_code", items_list[i]['item_code']);
-				frappe.model.set_value(child.doctype, child.name, "item_name", items_list[i]['item_name']);
-				frappe.model.set_value(child.doctype, child.name, "qty_per_unit_made", items_list[i]['qty']);
-				frappe.model.set_value(child.doctype, child.name, "qty_uom", items_list[i]['uom']);
-				frappe.model.set_value(child.doctype, child.name, "total_qty",total_qty);
+				frappe.model.set_value(child.doctype, child.name, "qty_uom", items_list[i]['qty_uom']);
+				frappe.model.set_value(child.doctype, child.name, "qty_per_unit_made", items_list[i]['qty_per_unit_made']);
+				frappe.model.set_value(child.doctype, child.name, "qty_in_stock_uom", items_list[i]['qty_in_stock_uom']);
+				frappe.model.set_value(child.doctype, child.name, "total_qty",items_list[i]['total_qty']);
+				frappe.model.set_value(child.doctype, child.name, "qty_of_raw_material_being_sent", items_list[i]['qty_of_raw_material_being_sent']);
+				frappe.model.set_value(child.doctype, child.name, "consumption_type", items_list[i]['consumption_type']);
 				frappe.model.set_value(child.doctype, child.name, "stock_uom", items_list[i]['stock_uom']);
 				frappe.model.set_value(child.doctype, child.name, "conversion_factor", items_list[i]['conversion_factor']);
-				frappe.model.set_value(child.doctype, child.name, "operand", items_list[i]['operand']);
-				frappe.model.set_value(child.doctype, child.name, "qty_in_stock_uom", items_list[i]['qty_in_stock_uom']);
 				frappe.model.set_value(child.doctype, child.name, "mmd", items_list[i]['name']);
-				//frappe.model.set_value(child.doctype, child.name, "dispatched_quantity_in_uom", items_list[i]['operand']);
+				frappe.model.set_value(child.doctype, child.name, "dispatched_quantity_in_uom", items_list[i]['dispatched_quantity_in_uom']);
+				frappe.model.set_value(child.doctype, child.name, "operand", items_list[i]['operand']);
 				}//end of for loop...
 				refresh_field("req_items");
 				}
