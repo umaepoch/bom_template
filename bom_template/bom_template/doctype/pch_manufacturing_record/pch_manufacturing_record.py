@@ -136,6 +136,10 @@ def send_material_for_manufacturing(entity):
 		"s_wh":entity.get("outbound_warehouse"),
 		"t_wh":entity.get("target_warehouse")
 		}
+		expense_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"expense_account")
+		trans_entity["add_amount"] = entity.get("subcontracting_rate")
+		trans_entity["expense_account"] = expense_account
+		trans_entity["isAdditionCost"] = 1
 		#transfer is must
 
 		start_process_pro_ord_no =int (start_process_pro_ord_no)
@@ -165,6 +169,7 @@ def send_material_for_manufacturing(entity):
 			if se_receipt:
 				#print "se_receipt created ",se_receipt
 				#print "transfer data ",trans_entity
+
 				se_transfer3 = make_transfer(trans_entity)
 				#print "se_transfer3 created ",se_transfer3
 				return "all 3 created"
@@ -191,6 +196,9 @@ def make_transfer(trans_entity):
 		}
 		transfer_items_list.append(item_dic)
 	se_trans_entity  = {"action" :"Material Transfer","items_list":transfer_items_list}
+	se_trans_entity["add_amount"] = trans_entity.get("add_amount")
+	se_trans_entity["expense_account"] = trans_entity.get("expense_account")
+	se_trans_entity["isAdditionCost"] = 1
 	se_transfer = create_stock_entry(se_trans_entity)
 	return se_transfer
 
@@ -198,10 +206,10 @@ def make_transfer(trans_entity):
 def create_stock_entry(se_entity):
 	#print ("from create_stock_entry se_entity :",se_entity)
 	se = frappe.new_doc("Stock Entry")
-	#se.purpose = se_entity.get("action")
-	#se.company = "Epoch Consulting"
-	se.company = "Shree Rakhi"
-	se.stock_entry_type = se_entity.get("action")
+	se.purpose = se_entity.get("action")
+	se.company = "Epoch Consulting"
+	#se.company = "Shree Rakhi"
+	#se.stock_entry_type = se_entity.get("action")
 
 	se.set('items', [])
 	for item in se_entity.get("items_list") :
@@ -210,7 +218,7 @@ def create_stock_entry(se_entity):
 		se_item.qty = item["qty"]
 		se_item.uom = item["uom"]
 		se_item.conversion_factor = item["conversion_factor"]
-		se_item.stock_uom = "Nos"
+		se_item.stock_uom = frappe.db.get_value("Item", {"name":item["item_code"]},"stock_uom")
 		if se_entity.get("action") == "Material Transfer":
 			se_item.s_warehouse =  item["s_wh"]
 			se_item.t_warehouse =  item["t_wh"]
@@ -219,14 +227,24 @@ def create_stock_entry(se_entity):
 		if se_entity.get("action") == "Material Receipt":
 			se_item.t_warehouse =  item["t_wh"]
 
+	if se_entity.get("isAdditionCost"):
+		se.set('additional_costs', [])
+		se_add_cost = se.append('additional_costs', {})
+		se_add_cost.description = "Manufacturing Record"
+		se_add_cost.expense_account = se_entity.get("expense_account")
+		se_add_cost.amount = se_entity.get("add_amount")
+
 	se.save(ignore_permissions=True)
 	se.submit()
 	frappe.db.commit()
 	return se.name
 
+
+
 @frappe.whitelist()
 def receive_material_for_manufacturing(entity):
 	entity = json.loads(entity)
+	expense_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"expense_account")
 
 	#make_transfer
 	#from method_item table  Subcontractor Warehouse== sourch wh and Receiving Warehouse==
@@ -242,7 +260,12 @@ def receive_material_for_manufacturing(entity):
 		}
 		transfer_items_list.append(item_dic)
 
+
+
 	se_trans_entity  = {"action" :"Material Transfer","items_list":transfer_items_list}
+	se_trans_entity["add_amount"] = entity.get("subcontracting_rate")
+	se_trans_entity["expense_account"] = expense_account
+	se_trans_entity["isAdditionCost"] = 1
 	se_transfer = create_stock_entry(se_trans_entity)
 	if se_transfer:
 		return se_transfer

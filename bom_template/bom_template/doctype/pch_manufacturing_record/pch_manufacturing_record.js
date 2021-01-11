@@ -74,6 +74,7 @@ function receive_material_for_manufacturing(doc_object){
 	var location =  doc_object.location //subContractor wh
 	var start_process =  doc_object.start_process
 	var receiving_warehouse =  doc_object.receiving_warehouse
+	var subcontracting_rate =  doc_object.subcontracting_rate
 
 	var entity ={
 		"req_items":req_items,
@@ -82,7 +83,8 @@ function receive_material_for_manufacturing(doc_object){
 		"target_warehouse":target_warehouse,
 		"receiving_warehouse":receiving_warehouse,
 		"start_process":start_process,
-		"location":location
+		"location":location,
+		"subcontracting_rate":subcontracting_rate
 	}
 	console.log("entity" + JSON.stringify(entity));
 
@@ -108,6 +110,7 @@ function send_material_for_manufacturing(doc_object){
 	var target_warehouse =  doc_object.target_warehouse //subContractor wh
 	var location =  doc_object.location //subContractor wh
 	var start_process =  doc_object.start_process
+	var subcontracting_rate =  doc_object.subcontracting_rate
 
 	var entity ={
 		"req_items":req_items,
@@ -115,7 +118,8 @@ function send_material_for_manufacturing(doc_object){
 		"outbound_warehouse":outbound_warehouse,
 		"target_warehouse":target_warehouse,
 		"start_process":start_process,
-		"location":location
+		"location":location,
+		"subcontracting_rate":subcontracting_rate
 	}
 
 	frappe.call({
