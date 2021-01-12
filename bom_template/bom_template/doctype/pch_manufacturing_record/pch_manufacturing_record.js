@@ -28,9 +28,16 @@ cur_frm.set_query('end_process', function() {
 
 
 frappe.ui.form.on('Pch Manufacturing Record', {
-	refresh: function(frm) {
-
-	}
+	item_made: function(frm) {
+		var item_chosen=cur_frm.doc.item_made;
+		var item_methods=get_methods(item_chosen);
+		if(item_chosen)
+		{
+			if(item_methods.length===1){
+			cur_frm.set_value("manufacturing_method",item_methods[0]);
+			}
+   }
+	}//end of field trigger
 });
 
 /*
@@ -409,6 +416,22 @@ function get_process_name(mmd_id){
 		return process
 }
 
+function get_methods(item_made){
+	var methods=[];
+	frappe.call({
+		method:'bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.get_method_based_on_item',
+		async:false,
+		args:{
+
+		"item_made":item_made
+		},
+
+		callback:function(r){
+		methods=r.message;
+		}
+	});
+	return methods
+}
 
 //
 //get_required_items button -Manufacturing Method,start_process,end_process,units_s_r validation neede
