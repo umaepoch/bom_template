@@ -210,10 +210,10 @@ def make_transfer(trans_entity):
 def create_stock_entry(se_entity):
 	#print ("from create_stock_entry se_entity :",se_entity)
 	se = frappe.new_doc("Stock Entry")
-	#se.purpose = se_entity.get("action")
-	#se.company = "Epoch Consulting"
-	se.company = "Shree Rakhi"
-	se.stock_entry_type = se_entity.get("action")
+	se.purpose = se_entity.get("action")
+	se.company = "Epoch Consulting"
+	#se.company = "Shree Rakhi"
+	#se.stock_entry_type = se_entity.get("action")
 
 	se.set('items', [])
 	for item in se_entity.get("items_list") :
@@ -271,7 +271,7 @@ def receive_material_for_manufacturing(entity):
 
 
 	se_trans_entity  = {"action" :"Material Transfer","items_list":transfer_items_list}
-	se_trans_entity["add_amount"] = entity.get("subcontracting_rate")
+	se_trans_entity["add_amount"] = entity.get("subcontracting_rate") * entity.get("units_s_r")
 	se_trans_entity["labour_account"] = labour_account
 	se_trans_entity["isAdditionCost"] = 1
 	se_transfer = create_stock_entry(se_trans_entity)

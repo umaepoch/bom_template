@@ -82,6 +82,7 @@ function receive_material_for_manufacturing(doc_object){
 	var start_process =  doc_object.start_process
 	var receiving_warehouse =  doc_object.receiving_warehouse
 	var subcontracting_rate =  doc_object.subcontracting_rate
+	var units_s_r =  doc_object.units_s_r
 
 	var entity ={
 		"req_items":req_items,
@@ -91,7 +92,8 @@ function receive_material_for_manufacturing(doc_object){
 		"receiving_warehouse":receiving_warehouse,
 		"start_process":start_process,
 		"location":location,
-		"subcontracting_rate":subcontracting_rate
+		"subcontracting_rate":subcontracting_rate,
+		"units_s_r":units_s_r
 	}
 	console.log("entity" + JSON.stringify(entity));
 
