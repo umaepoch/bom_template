@@ -19,9 +19,9 @@ def execute(filters=None):
 		"process_order":mrec.get("process_order"),
 		"sub_contractor":mrec.get("sub_contractor"),
 		"subcontractor_warehouse":mrec.get("target_warehouse"),
-		"subcontractor_warehouse_qty": get_stock_qty_in_wh(mrec.get("item_made"),mrec.get("outbound_warehouse")),
+		"subcontractor_warehouse_qty": get_stock_qty_in_wh(mrec.get("item_made"),mrec.get("target_warehouse")),
 		"outbound_warehouse":mrec.get("outbound_warehouse"),
-		"outbound_warehouse_qty": get_stock_qty_in_wh(mrec.get("item_made"),mrec.get("target_warehouse")),
+		"outbound_warehouse_qty": get_stock_qty_in_wh(mrec.get("item_made"),mrec.get("outbound_warehouse")),
 		"receiving_warehouse":mrec.get("receiving_warehouse"),
 		"outbound_warehouse_qty": get_stock_qty_in_wh(mrec.get("item_made"),mrec.get("receiving_warehouse")),
 		"qty_after_transaction":1
