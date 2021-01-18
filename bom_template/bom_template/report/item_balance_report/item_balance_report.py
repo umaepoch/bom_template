@@ -19,8 +19,11 @@ def execute(filters=None):
 		"process_order":mrec.get("process_order"),
 		"sub_contractor":mrec.get("sub_contractor"),
 		"subcontractor_warehouse":mrec.get("target_warehouse"),
+		"subcontractor_warehouse_qty": get_stock_qty_in_wh(mrec.get("item_made"),mrec.get("outbound_warehouse")),
 		"outbound_warehouse":mrec.get("outbound_warehouse"),
+		"outbound_warehouse_qty": get_stock_qty_in_wh(mrec.get("item_made"),mrec.get("target_warehouse")),
 		"receiving_warehouse":mrec.get("receiving_warehouse"),
+		"outbound_warehouse_qty": get_stock_qty_in_wh(mrec.get("item_made"),mrec.get("receiving_warehouse")),
 		"qty_after_transaction":1
 		}
 		data.append(row_dic)
@@ -28,7 +31,7 @@ def execute(filters=None):
 
 def get_columns():
 	columns = []
-	for col in range(10):
+	for col in range(13):
 		columns.append("")
 
 
@@ -76,20 +79,41 @@ def get_columns():
 	"width": 160
 	}
 	columns[6] = {
+	"label": "Qty in Outbound Warehouse",
+	"options": "Warehouse",
+	"fieldname": "outbound_warehouse_qty",
+	"fieldtype": "Link",
+	"width": 160
+	}
+	columns[7] = {
 	"label": "Subcontractor Warehouse",
 	"options": "Warehouse",
 	"fieldname": "subcontractor_warehouse",
 	"fieldtype": "Link",
 	"width": 160
 	}
-	columns[7] = {
+	columns[8] = {
+	"label": "Qty in Subcontractor Warehouse",
+	"options": "Warehouse",
+	"fieldname": "subcontractor_warehouse_qty",
+	"fieldtype": "Link",
+	"width": 160
+	}
+	columns[9] = {
 	"label": "Receiving Warehouse",
 	"options": "Warehouse",
 	"fieldname": "receiving_warehouse",
 	"fieldtype": "Link",
 	"width": 160
 	}
-	columns[8] = {
+	columns[10] = {
+	"label": "Qty in Receiving Warehouse",
+	"options": "Warehouse",
+	"fieldname": "receiving_warehouse_qty",
+	"fieldtype": "Link",
+	"width": 160
+	}
+	columns[11] = {
 	"label": "Item Balance after Transaction",
 	"fieldname": "qty_after_transaction",
 	"width": 160
@@ -122,3 +146,6 @@ def get_conditions(filters):
     if filters.get("item_made_fil"):
         conditions += " and mrec.item_made = %s" % frappe.db.escape(filters.get("mrec"), percent=False)
     return conditions
+def get_stock_qty_in_wh(item_code,wh):
+    stock_qty_in_wh = frappe.db.sql("""select actual_qty  from `tabBin` where item_code=%s and warehouse= %s""", (item_code,wh), as_dict=1)
+    return stock_qty_in_wh[0]["actual_qty"] if  stock_qty_in_wh else 0
