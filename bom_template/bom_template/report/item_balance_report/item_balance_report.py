@@ -23,25 +23,30 @@ def execute(filters=None):
 			process =  frappe.db.get_value("Pch Manufacturing Method Details", {"name":  item.get("start_process")}, "pch_process")
 
 			if  process == "Rakhi Making":
-				row_dic = {"rm_outbound_wh_qty":get_stock_qty_in_wh(item.get("item_made"),item.get("outbound_warehouse")),
+				process_dic = {"rm_outbound_wh_qty":get_stock_qty_in_wh(item.get("item_made"),item.get("outbound_warehouse")),
 						   "rm_karigar_wh_qty":get_stock_qty_in_wh(item.get("item_made"),item.get("target_warehouse")),
 						   "rm_inbound_wh_qty":get_stock_qty_in_wh(item.get("item_made"),item.get("receiving_warehouse"))
 						   }
+				row_dic.update(process_dic)
+
 			if  process == "Stone Fitting":
-				row_dic = {"sf_outbound_wh_qty":get_stock_qty_in_wh(item.get("item_made"),item.get("outbound_warehouse")),
+				process_dic = {"sf_outbound_wh_qty":get_stock_qty_in_wh(item.get("item_made"),item.get("outbound_warehouse")),
 						   "sf_karigar_wh_qty":get_stock_qty_in_wh(item.get("item_made"),item.get("target_warehouse")),
 						   "sf_inbound_wh_qty":get_stock_qty_in_wh(item.get("item_made"),item.get("receiving_warehouse"))
 						   }
+				row_dic.update(process_dic)
 			if  process == "Geenth":
-				row_dic = {"geenth_outbound_wh_qty":get_stock_qty_in_wh(item.get("item_made"),item.get("outbound_warehouse")),
+				process_dic = {"geenth_outbound_wh_qty":get_stock_qty_in_wh(item.get("item_made"),item.get("outbound_warehouse")),
 						   "geenth_karigar_wh_qty":get_stock_qty_in_wh(item.get("item_made"),item.get("target_warehouse")),
 						   "geenth_inbound_wh_qty":get_stock_qty_in_wh(item.get("item_made"),item.get("receiving_warehouse"))
 						   }
+				row_dic.update(process_dic)
 			if  process == "Packing":
-				row_dic = {"pack_outbound_wh_qty":get_stock_qty_in_wh(item.get("item_made"),item.get("outbound_warehouse")),
+				process_dic = {"pack_outbound_wh_qty":get_stock_qty_in_wh(item.get("item_made"),item.get("outbound_warehouse")),
 						   "pack_karigar_wh_qty":get_stock_qty_in_wh(item.get("item_made"),item.get("target_warehouse")),
 						   "pack_inbound_wh_qty":get_stock_qty_in_wh(item.get("item_made"),item.get("receiving_warehouse"))
 						   }
+				row_dic.update(process_dic)
 			parent_row_dic.update(row_dic)
 
 		print ("parent_row_dic",parent_row_dic)
