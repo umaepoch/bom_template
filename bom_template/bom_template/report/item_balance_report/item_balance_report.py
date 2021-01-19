@@ -44,7 +44,7 @@ def execute(filters=None):
 						   }
 			parent_row_dic.update(row_dic)
 
-		#print "parent_row_dic",parent_row_dic
+		print ("parent_row_dic",parent_row_dic)
 		data.append(parent_row_dic)
 	return columns, data
 
