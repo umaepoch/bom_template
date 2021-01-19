@@ -150,7 +150,7 @@ def get_mrec_data(filters):
 			mrec_json[mrec["item_made"]].append(mrec)
 		else:
 			mrec_json[mrec["item_made"]]= [mrec]
-	print "mrec_json",mrec_json
+	#print "mrec_json",mrec_json
 	
 
 	return mrec_json
