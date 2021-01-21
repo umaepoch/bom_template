@@ -167,7 +167,7 @@ def get_mrec_data(filters):
 	if filters.get("item_made_fil"):
 		mrec_data = frappe.db.sql("""select mrec.name,mrec.item_made,mrec.units_s_r,mrec.manufacturing_record_type,mrec.manufacturing_method,mrec.start_process,mmd.process_order,mmd.pch_process,mrec.outbound_warehouse,mrec.sub_contractor,mrec.target_warehouse,mrec.receiving_warehouse from `tabPch Manufacturing Record`    mrec,`tabPch Manufacturing Method Details` mmd where   mrec.docstatus = 1 and mrec.item_made = %s  and mmd.name = mrec.start_process order by mmd.process_order """, (filters.get("item_made_fil")), as_dict=1)
 	else:
-		mrec_data = frappe.db.sql("""select mrec.name,mrec.item_made,mrec.units_s_rmrec.manufacturing_method,mrec.start_process,mmd.process_order,mmd.pch_process,mrec.outbound_warehouse,mrec.sub_contractor,mrec.target_warehouse,mrec.receiving_warehouse from `tabPch Manufacturing Record`    mrec,`tabPch Manufacturing Method Details` mmd where   mrec.docstatus = 1 and  mmd.name = mrec.start_process order by mmd.process_order """,as_dict=1)
+		mrec_data = frappe.db.sql("""select mrec.name,mrec.item_made,mrec.units_s_r,mrec.manufacturing_method,mrec.start_process,mmd.process_order,mmd.pch_process,mrec.outbound_warehouse,mrec.sub_contractor,mrec.target_warehouse,mrec.receiving_warehouse from `tabPch Manufacturing Record`    mrec,`tabPch Manufacturing Method Details` mmd where   mrec.docstatus = 1 and  mmd.name = mrec.start_process order by mmd.process_order """,as_dict=1)
 
 	mrec_json = {}   #{"item1":{"process1":[query_data,query_data], "process2":[query_data,query_data] }}
 	for mrec in mrec_data :
