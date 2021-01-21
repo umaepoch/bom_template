@@ -12,60 +12,68 @@ def execute(filters=None):
 	for item_made, item_json in mrec_data.items():
 		parent_row_dic = {"item_made_temp": item_made}
 
-		for process_wise_rec_data_list in item_json.get("Rakhi Making"):
-			if process_wise_rec_data_list.get("manufacturing_record_type") == "Send Material for Manufacturing" :
-				process_dic = {
-					"manufacturing_method":process_wise_rec_data_list.get("manufacturing_method"),
-					"rm_outbound_wh_qty": process_wise_rec_data_list.get("units_s_r") ,
-					"rm_karigar_wh_qty": process_wise_rec_data_list.get("units_s_r")
-				}
-				parent_row_dic.update(process_dic)
-			elif process_wise_rec_data_list.get("manufacturing_record_type") == "Receive Material from Manufacturing" :
-				process_dic = {
-					"rm_inbound_wh_qty": process_wise_rec_data_list.get("units_s_r")
-				}
-				parent_row_dic.update(process_dic)
+		if item_json.get("Rakhi Making"):
+			for process_wise_rec_data_list in item_json.get("Rakhi Making"):
+				if process_wise_rec_data_list.get("manufacturing_record_type") == "Send Material for Manufacturing":
+					process_dic = {
+						"manufacturing_method": process_wise_rec_data_list.get("manufacturing_method"),
+						"rm_outbound_wh_qty": process_wise_rec_data_list.get("units_s_r"),
+						"rm_karigar_wh_qty": process_wise_rec_data_list.get("units_s_r")
+					}
+					parent_row_dic.update(process_dic)
+				elif process_wise_rec_data_list.get(
+						"manufacturing_record_type") == "Receive Material from Manufacturing":
+					process_dic = {
+						"rm_inbound_wh_qty": process_wise_rec_data_list.get("units_s_r")
+					}
+					parent_row_dic.update(process_dic)
 
-		for process_wise_rec_data_list in item_json.get("Geenth"):
-			if process_wise_rec_data_list.get("manufacturing_record_type") == "Send Material for Manufacturing" :
-				process_dic = {
-					"manufacturing_method": process_wise_rec_data_list.get("manufacturing_method"),
-					"geenth_outbound_wh_qty": process_wise_rec_data_list.get("units_s_r") ,
-					"geenth_karigar_wh_qty": process_wise_rec_data_list.get("units_s_r")
-				}
-				parent_row_dic.update(process_dic)
-			elif process_wise_rec_data_list.get("manufacturing_record_type") == "Receive Material from Manufacturing" :
-				process_dic = {
-					"geenth_inbound_wh_qty": process_wise_rec_data_list.get("units_s_r")
-				}
-				parent_row_dic.update(process_dic)
+		if item_json.get("Geenth"):
+			for process_wise_rec_data_list in item_json.get("Geenth"):
+				if process_wise_rec_data_list.get("manufacturing_record_type") == "Send Material for Manufacturing":
+					process_dic = {
+						"manufacturing_method": process_wise_rec_data_list.get("manufacturing_method"),
+						"geenth_outbound_wh_qty": process_wise_rec_data_list.get("units_s_r"),
+						"geenth_karigar_wh_qty": process_wise_rec_data_list.get("units_s_r")
+					}
+					parent_row_dic.update(process_dic)
+				elif process_wise_rec_data_list.get(
+						"manufacturing_record_type") == "Receive Material from Manufacturing":
+					process_dic = {
+						"geenth_inbound_wh_qty": process_wise_rec_data_list.get("units_s_r")
+					}
+					parent_row_dic.update(process_dic)
 
-		for process_wise_rec_data_list in item_json.get("Stone Fitting"):
-			if process_wise_rec_data_list.get("manufacturing_record_type") == "Send Material for Manufacturing" :
-				process_dic = {
-					"manufacturing_method": process_wise_rec_data_list.get("manufacturing_method"),
-					"sf_outbound_wh_qty":process_wise_rec_data_list.get("units_s_r") ,
-					"sf_karigar_wh_qty": process_wise_rec_data_list.get("units_s_r")
-				}
-				parent_row_dic.update(process_dic)
-			elif process_wise_rec_data_list.get("manufacturing_record_type") == "Receive Material from Manufacturing" :
-				process_dic = {
-					"sf_inbound_wh_qty": process_wise_rec_data_list.get("units_s_r")
-				}
-				parent_row_dic.update(process_dic)
+		if item_json.get("Stone Fitting"):
+			for process_wise_rec_data_list in item_json.get("Stone Fitting"):
+				if process_wise_rec_data_list.get("manufacturing_record_type") == "Send Material for Manufacturing":
+					process_dic = {
+						"manufacturing_method": process_wise_rec_data_list.get("manufacturing_method"),
+						"sf_outbound_wh_qty": process_wise_rec_data_list.get("units_s_r"),
+						"sf_karigar_wh_qty": process_wise_rec_data_list.get("units_s_r")
+					}
+					parent_row_dic.update(process_dic)
+				elif process_wise_rec_data_list.get(
+						"manufacturing_record_type") == "Receive Material from Manufacturing":
+					process_dic = {
+						"sf_inbound_wh_qty": process_wise_rec_data_list.get("units_s_r")
+					}
+					parent_row_dic.update(process_dic)
 
-		for process_wise_rec_data_list in item_json.get("Packing"):
-			if process_wise_rec_data_list.get("manufacturing_record_type") == "Send Material for Manufacturing" :
-				process_dic = {
-					"pack_outbound_wh_qty": process_wise_rec_data_list.get("units_s_r") ,
-					"pack_karigar_wh_qty": process_wise_rec_data_list.get("units_s_r")
-				}
-				parent_row_dic.update(process_dic)
-			elif process_wise_rec_data_list.get("manufacturing_record_type") == "Receive Material from Manufacturing" :
-				process_dic = {
-					"pack_inbound_wh_qty": process_wise_rec_data_list.get("units_s_r")
-				}
-				parent_row_dic.update(process_dic)
+		if item_json.get("Packing"):
+			for process_wise_rec_data_list in item_json.get("Packing"):
+				if process_wise_rec_data_list.get("manufacturing_record_type") == "Send Material for Manufacturing":
+					process_dic = {
+						"pack_outbound_wh_qty": process_wise_rec_data_list.get("units_s_r"),
+						"pack_karigar_wh_qty": process_wise_rec_data_list.get("units_s_r")
+					}
+					parent_row_dic.update(process_dic)
+				elif process_wise_rec_data_list.get(
+						"manufacturing_record_type") == "Receive Material from Manufacturing":
+					process_dic = {
+						"pack_inbound_wh_qty": process_wise_rec_data_list.get("units_s_r")
+					}
+					parent_row_dic.update(process_dic)
 
 		data.append(parent_row_dic)
 
