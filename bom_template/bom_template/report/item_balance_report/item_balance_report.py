@@ -121,7 +121,7 @@ def get_stock_qty_in_wh(item_code,wh):
     return stock_qty_in_wh[0]["actual_qty"] if  stock_qty_in_wh else 0
 
 def get_process_list(method_name):
-	process_dic = frappe.db.sql("""select DISTINCT pch_process  from `tabPch Manufacturing Method Details` where pch_method=%s """,(method_name), as_dict=1)
+	process_dic = frappe.db.sql("""select DISTINCT pch_process  from `tabPch Manufacturing Method Details` where pch_method=%s  order by process_order """,(method_name), as_dict=1)
 	process_list = []
 	for process in process_dic:
 		process_list.append(process["pch_process"])
