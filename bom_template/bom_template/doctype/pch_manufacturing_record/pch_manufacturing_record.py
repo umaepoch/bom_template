@@ -114,7 +114,8 @@ def send_material_for_manufacturing(entity):
 	for i_row in entity.get("req_items"):
 		item_dic = {
 		"item_code" :i_row.get("item_code") ,
-		"qty":i_row.get("total_qty"),
+		#making a change here "qty":i_row.get("total_qty") was the code before this 
+		"qty":i_row.get("dispatched_quantity_in_uom"),
 		"uom":i_row.get("qty_uom"),
 		"conversion_factor":i_row.get("conversion_factor"),
 		"t_wh":None,
@@ -126,11 +127,12 @@ def send_material_for_manufacturing(entity):
 	#print "se_issue_entity",se_issue_entity
 	se_issue = create_stock_entry(se_issue_entity)
 	#issue_end
-
-	if se_issue :
+	response=[];
+	if se_issue[0]["Exception"]=="Not Occured" :
 
 		#issue is done #call_next_transaction #material_rec
-
+		#Response JSON to validate Stock Entry Creation
+		response.append({"Name":se_issue[0]["Name"],"Status":"Created","Stock Entry Type":"Material Issue"});
 		#transfer is must
 		trans_entity = {
 		"items":entity.get("method_items"),
@@ -140,7 +142,7 @@ def send_material_for_manufacturing(entity):
 		labour_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"labour_account")
 		trans_entity["labour_account"] = labour_account
 		trans_entity["isAdditionCost"] = 1
-		trans_entity["add_amount"] = frappe.db.get_value("Stock Entry", {"name":se_issue},"total_outgoing_value")
+		trans_entity["add_amount"] = frappe.db.get_value("Stock Entry", {"name":se_issue[0]["Name"]},"total_outgoing_value")
 		trans_entity["item_payload_account"] = item_payload_account
 		#transfer is must
 
@@ -169,22 +171,43 @@ def send_material_for_manufacturing(entity):
 			se_receipt = create_stock_entry(se_rec_entity)
 
 
-			if se_receipt:
+			if se_receipt[0]["Exception"]=="Not Occured":
 				#print "se_receipt created ",se_receipt
 				#print "transfer data ",trans_entity
-
+				response.append({"Name":se_receipt[0]["Name"],"Status":"Created","Stock Entry Type":"Material Receipt"});
 				se_transfer3 = make_transfer(trans_entity)
+				if se_transfer3[0]["Exception"]=="Not Occured":
+					response.append({"Name":se_transfer3[0]["Name"],"Status":"Created","Stock Entry Type":"Material Transfer"});
+					#return response
 				#print "se_transfer3 created ",se_transfer3
-				return "all 3 created"
+				else:
+					response.append({"Name":se_transfer3[0]["Name"],"Status":"Not Created","Stock Entry Type":"Material Transfer"});
+					
+				
+				
+			else:
+				response.append({"Name":se_receipt[0]["Name"],"Status":"Not Created","Stock Entry Type":"Material Receipt"});
+			
+	
+				
 		else:
 			#print "se_issue created 2t:",se_issue
 			#print "transfer data ",trans_entity
 			se_transfer2 = make_transfer(trans_entity)
 			#print "se_transfer2 created ",se_transfer2
-			return "all 2 created"
+			if se_transfer2[0]["Exception"]=="Not Occured":
+				response.append({"Name":se_transfer2[0]["Name"],"Status":"Created","Stock Entry Type":"Material Transfer"});
+			else:
+				response.append({"Name":se_transfer2[0]["Name"],"Status":"Not Created","Stock Entry Type":"Material Transfer"});
+				print(response)
+			
+		
 	else:
 		#print "se_transfer3 created ",se_transfer3
-		return "failed to create 1 trans issue"
+		response.append({"Name":se_issue[0]["Name"],"Status":"Not Created","Stock Entry Type":"Material Issue"});
+	print(response)	
+	return response
+	
 
 def make_transfer(trans_entity):
 	transfer_items_list = []
@@ -210,41 +233,50 @@ def make_transfer(trans_entity):
 def create_stock_entry(se_entity):
 	#print ("from create_stock_entry se_entity :",se_entity)
 	#test
-	se = frappe.new_doc("Stock Entry")
-	#se.purpose = se_entity.get("action")
-	#se.company = "Epoch Consulting"
-	se.company = "Shree Rakhi"
-	se.stock_entry_type = se_entity.get("action")
+	status=[]
+	try:
+		se = frappe.new_doc("Stock Entry")
+		#se.purpose = se_entity.get("action")
+		#se.company = "Epoch Consulting"
+		se.company = "Shree Rakhi"
+		se.stock_entry_type = se_entity.get("action")
 
-	se.set('items', [])
-	for item in se_entity.get("items_list") :
-		se_item = se.append('items', {})
-		se_item.item_code = item["item_code"]
-		se_item.qty = item["qty"]
-		se_item.uom = item["uom"]
-		se_item.conversion_factor = item["conversion_factor"]
-		se_item.expense_account = item["item_payload_account"]  #dif acc
-		se_item.stock_uom = frappe.db.get_value("Item", {"name":item["item_code"]},"stock_uom")
-		if se_entity.get("action") == "Material Transfer":
-			se_item.s_warehouse =  item["s_wh"]
-			se_item.t_warehouse =  item["t_wh"]
-		if se_entity.get("action") == "Material Issue":
-			se_item.s_warehouse =  item["s_wh"]
-		if se_entity.get("action") == "Material Receipt":
-			se_item.t_warehouse =  item["t_wh"]
+		se.set('items', [])
+		for item in se_entity.get("items_list") :
+			se_item = se.append('items', {})
+			se_item.item_code = item["item_code"]
+			se_item.qty = item["qty"]
+			se_item.uom = item["uom"]
+			se_item.conversion_factor = item["conversion_factor"]
+			se_item.expense_account = item["item_payload_account"]  #dif acc
+			se_item.stock_uom = frappe.db.get_value("Item", {"name":item["item_code"]},"stock_uom")
+			se_item.basic_rate=0.01
+			print(se_item.basic_rate);
+			if se_entity.get("action") == "Material Transfer":
+				se_item.s_warehouse =  item["s_wh"]
+				se_item.t_warehouse =  item["t_wh"]
+			if se_entity.get("action") == "Material Issue":
+				se_item.s_warehouse =  item["s_wh"]
+			if se_entity.get("action") == "Material Receipt":
+				se_item.t_warehouse =  item["t_wh"]
 
-	if se_entity.get("isAdditionCost"):
-		se.set('additional_costs', [])
-		se_add_cost = se.append('additional_costs', {})
-		se_add_cost.description = "Manufacturing Record"
-		se_add_cost.expense_account = se_entity.get("labour_account")
-		se_add_cost.amount = se_entity.get("add_amount")
+		if se_entity.get("isAdditionCost"):
+			se.set('additional_costs', [])
+			se_add_cost = se.append('additional_costs', {})
+			se_add_cost.description = "Manufacturing Record"
+			se_add_cost.expense_account = se_entity.get("labour_account")
+			se_add_cost.amount = se_entity.get("add_amount")
 
-	se.save(ignore_permissions=True)
-	se.submit()
-	frappe.db.commit()
-	return se.name
-
+		se.save(ignore_permissions=True)
+		se.submit()
+		frappe.db.commit()
+		status.append({"Name":se.name,"Exception":"Not Occured"});
+		
+	except Exception as e:	
+		print('An exception occured while creating Stock Entry',e);
+		status.append({"Name":se.name,"Exception":"Occured","Exception type":e});
+		frappe.delete_doc("Stock Entry",se.name)
+	return status
 
 
 @frappe.whitelist()
@@ -253,7 +285,7 @@ def receive_material_for_manufacturing(entity):
 	labour_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"labour_account")
 	item_payload_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"item_payload_account")
 
-
+	response=[];
 	#make_transfer
 	#from method_item table  Subcontractor Warehouse== sourch wh and Receiving Warehouse==
 	transfer_items_list = []
@@ -276,11 +308,17 @@ def receive_material_for_manufacturing(entity):
 	se_trans_entity["labour_account"] = labour_account
 	se_trans_entity["isAdditionCost"] = 1
 	se_transfer = create_stock_entry(se_trans_entity)
-	if se_transfer:
-		return se_transfer
+	#print(se_transfer,"-----------------------------------------------");
+	if (se_transfer[0]["Exception"]=="Not Occured"):
+		#response.append({"Name":se_transfer,"Status":"Created"});
+		response.append({"Name":se_transfer[0]["Name"],"Status":"Created","Stock Entry Type":"Material Transfer"});
+		#print(response)
+		#return response
 	else:
-		"bug in transfer"
-
+		response.append({"Name":se_transfer[0]["Name"],"Status":"Not Created","Stock Entry Type":"Material Transfer"});
+		#response.append({"Name":se_transfer,"Status":"Not Created"});
+		#print(response)
+	return response
 
 
     #ability to create purchase invoice in future
@@ -296,3 +334,76 @@ def get_method_based_on_item(item_made):
 			methods.append(method.parent);
 	#print(methods);
 	return methods
+
+@frappe.whitelist()
+def cancel_s_entries(mat_issue,mat_receipt,mat_transfer):
+
+	doc1=frappe.get_doc("Stock Entry",mat_issue);
+	doc2=frappe.get_doc("Stock Entry",mat_receipt);
+	doc3=frappe.get_doc("Stock Entry",mat_transfer);
+	#mrec=frappe.get_doc("Pch Manufacturing Record",
+	
+	if (doc1):
+		doc1.docstatus=2
+		doc1.save()
+	if (doc2):
+		doc2.docstatus=2
+		doc2.save()
+	if (doc3):
+		doc3.docstatus=2
+		doc3.save()
+	
+	
+	return "SE deleted"
+@frappe.whitelist()
+def cancel_single_se(mat_transfer):
+	doc1=frappe.get_doc("Stock Entry",mat_transfer);
+	if(doc1):
+		doc1.docstatus=2
+		doc1.save()
+	return "Single SE deleted"
+
+@frappe.whitelist()
+def move_material_internally(entity):
+	entity = json.loads(entity)
+	
+	
+	labour_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"labour_account")
+	item_payload_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"item_payload_account")
+	response=[];
+	#make_transfer
+	#from method_item table  Subcontractor Warehouse== sourch wh and Receiving Warehouse==
+	transfer_items_list = []
+	for i_row in entity.get("method_items"):
+		item_dic = {
+		"item_code" :i_row.get("item_made") ,
+		"qty":i_row.get("qty_made"),
+		"uom":i_row.get("qty_uom"),
+		"conversion_factor" : i_row.get("conversion_factor"),
+		"s_wh":entity.get("outbound_warehouse"), #Internal warehouse from which the material needs to be transferred to process ob
+		"t_wh":entity.get("receiving_warehouse"),
+		"item_payload_account":item_payload_account
+		
+		}
+		transfer_items_list.append(item_dic)
+
+
+
+	se_trans_entity  = {"action" :"Material Transfer","items_list":transfer_items_list}
+	
+	
+	se_transfer = create_stock_entry(se_trans_entity)
+	
+	print(se_trans_entity);
+	
+	
+	print(se_transfer)
+	if (se_transfer[0]["Exception"]=="Not Occured"):
+		response.append({"Name":se_transfer,"Status":"Created"});
+		print(response)
+		return response
+	else:
+		response.append({"Name":se_transfer,"Status":"Not Created"});
+		print(response)
+		return response
+

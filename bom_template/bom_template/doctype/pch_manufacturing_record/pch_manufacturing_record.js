@@ -64,14 +64,160 @@ frappe.ui.form.on("Pch Manufacturing Record", "on_submit", function(frm, cdt, cd
 	console.log("on_submit working")
 	var m_record_type = cur_frm.doc.manufacturing_record_type ;
 	if(m_record_type == "Send Material for Manufacturing"){
-		send_material_for_manufacturing(cur_frm.doc)
+		var r=send_material_for_manufacturing(cur_frm.doc)
+		console.log(r,"Ok");
 		//validation for issue
+		for(var i=0;i<r.length;i++)
+		{
+		
+			if(r[i]["Status"]=="Created")
+			{
+			
+				frappe.msgprint("Stock Entry for"+" "+r[i]["Stock Entry Type"]+" "+"has been made"+" "+"ID of the corresponding Stock Entry is"+" "+r[i]["Name"])
+				//console.log(r[i]["Name"]);
+				if(r[i]["Stock Entry Type"]=="Material Issue")
+				{
+					cur_frm.set_value("pch_material_issue",r[i]["Name"]);
+				}
+				else if (r[i]["Stock Entry Type"]=="Material Receipt")	
+				{
+					cur_frm.set_value("pch_material_receipt",r[i]["Name"]);
+				
+				}
+				
+				else
+				{
+				cur_frm.set_value("pch_material_transfer",r[i]["Name"]);
+				}
+			}
+			cur_frm.save('Submit');
+		}
+		
 	}
-
 	if(m_record_type == "Receive Material from Manufacturing"){
-		receive_material_for_manufacturing(cur_frm.doc)
+	var r1=receive_material_for_manufacturing(cur_frm.doc);
+		if(r1[0]["Status"]=="Created")
+		
+		{
+		
+			if(r1[0]["Stock Entry Type"]=="Material Transfer")
+			{
+			
+				cur_frm.set_value("pch_material_transfer",r1[0]["Name"]);
+			}		
+			cur_frm.save('Submit');
+		}
+	}
+	if(m_record_type=="Send Materials to Internal Storage WH")
+	{
+		var r3=transfer_material_internally(cur_frm.doc);
+		if(r3[0]["Status"]=="Created")
+		{
+			
+			if(r3[0]["Stock Entry Type"]=="Material Transfer")
+			{
+			
+				cur_frm.set_value("pch_material_transfer",r3[0]["Name"]);
+			}		
+			cur_frm.save('Submit');
+		
+		}
+
+	
 	}
 });
+
+frappe.ui.form.on("Pch Manufacturing Record","after_cancel",function(frm,cdt,cdn){
+	console.log("After c");
+	var material_issue_entry=cur_frm.doc.pch_material_issue;
+	var material_receipt_entry=cur_frm.doc.pch_material_receipt;
+	var material_transfer_entry=cur_frm.doc.pch_material_transfer;
+	var record_type=cur_frm.doc.manufacturing_record_type;
+	if(record_type=="Send Material for Manufacturing")
+	{
+	var cancel=cancel_stock_entries(material_issue_entry,material_receipt_entry,material_transfer_entry);
+	        
+		
+	if(cancel){
+	
+		frappe.msgprint('Corresponding Stock Entries of the cancelled Record have been cancelled');
+		cur_frm.set_value("pch_material_issue","");
+		cur_frm.refresh_field("pch_material_issue");
+		
+		cur_frm.set_value("pch_material_receipt","");
+		cur_frm.refresh_field("pch_material_receipt");
+		
+		cur_frm.set_value("pch_material_transfer","");
+		cur_frm.refresh_field("pch_material_transfer");
+		
+		console.log(material_issue_entry);
+		
+	}
+	}
+	else if (record_type=="Receive Material from Manufacturing"){
+	
+		var c1=cancel_se_for_rm(material_transfer_entry);
+		cur_frm.set_value("pch_material_transfer","");
+		cur_frm.refresh_field("pch_material_transfer");
+		console.log("Mat Transfer Cancelled");
+	
+	
+	}
+	else if (record_type=="Send Materials to Internal Storage WH")
+	{
+		var c1=cancel_se_for_rm(material_transfer_entry);
+		console.log("Mat Transfer Cancelled");
+	
+	
+	}
+	else
+	{
+		console.log('nnnn');
+		
+	}
+
+});
+function cancel_stock_entries(mat_issue,mat_receipt,mat_transfer){
+	var resp;
+	frappe.call({
+		method:"bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.cancel_s_entries",
+		args:{
+			
+			"mat_issue":mat_issue,
+			"mat_receipt":mat_receipt,
+			"mat_transfer":mat_transfer
+		
+		},
+		async:false,
+		callback:function(r){
+		
+		
+			 resp=r.message;
+		}
+	})
+	return resp;
+}
+function cancel_se_for_rm(mat_transfer){
+
+	var resp;
+	frappe.call({
+		method:"bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.cancel_single_se",
+		args:{
+			
+			"mat_transfer":mat_transfer
+			
+		
+		},
+		async:false,
+		callback:function(r){
+		
+		
+			 resp=r.message;
+		}
+	})
+	return resp;
+}
+
 
 function receive_material_for_manufacturing(doc_object){
 	var req_items = doc_object.req_items
@@ -145,6 +291,44 @@ function send_material_for_manufacturing(doc_object){
 	}) //end of frappe call..
 
 }
+function transfer_material_internally(doc_object){
+	//var req_items = doc_object.req_items
+	var method_items = doc_object.method_items
+	var outbound_warehouse =  doc_object.outbound_warehouse
+	//var target_warehouse =  doc_object.target_warehouse //subContractor wh
+	var location =  doc_object.location //subContractor wh
+	var start_process =  doc_object.start_process
+	var receiving_warehouse =  doc_object.receiving_warehouse
+	//var subcontracting_rate =  doc_object.subcontracting_rate
+	var units_s_r =  doc_object.units_s_r
+	var resp;
+	var entity ={
+		
+		"method_items":method_items,
+		"outbound_warehouse":outbound_warehouse,
+		"receiving_warehouse":receiving_warehouse,
+		"start_process":start_process,
+		"units_s_r":units_s_r
+		
+	}
+	console.log("entity" + JSON.stringify(entity));
+
+
+	frappe.call({
+			method: "bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.move_material_internally",
+			args: {
+		 "entity":entity
+			},
+			async: false,
+			callback: function(r) {
+					if (r.message) {
+							resp=r.message
+							console.log("method_doc_data receive_material_for_manufacturing" + JSON.stringify(r.message));
+							}
+			} //end of callback fun..
+	}) //end of frappe call..
+	return resp
+} //end of receive_material_for_manufacturing
 
 
 frappe.ui.form.on("Pch Manufacturing Record", "manufacturing_method", function(frm, cdt, cdn) {
