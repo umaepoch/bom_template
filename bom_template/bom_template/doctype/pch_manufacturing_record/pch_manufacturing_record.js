@@ -229,7 +229,7 @@ function receive_material_for_manufacturing(doc_object){
 	var receiving_warehouse =  doc_object.receiving_warehouse
 	var subcontracting_rate =  doc_object.subcontracting_rate
 	var units_s_r =  doc_object.units_s_r
-
+	var resp;
 	var entity ={
 		"req_items":req_items,
 		"method_items":method_items,
@@ -252,10 +252,12 @@ function receive_material_for_manufacturing(doc_object){
 			async: false,
 			callback: function(r) {
 					if (r.message) {
+					resp=r.message;
 							console.log("method_doc_data receive_material_for_manufacturing" + JSON.stringify(r.message));
 							}
 			} //end of callback fun..
 	}) //end of frappe call..
+	return resp;
 } //end of receive_material_for_manufacturing
 
 function send_material_for_manufacturing(doc_object){
@@ -266,7 +268,7 @@ function send_material_for_manufacturing(doc_object){
 	var location =  doc_object.location //subContractor wh
 	var start_process =  doc_object.start_process
 	var subcontracting_rate =  doc_object.subcontracting_rate
-
+	var resp;
 	var entity ={
 		"req_items":req_items,
 		"method_items":method_items,
@@ -285,11 +287,12 @@ function send_material_for_manufacturing(doc_object){
 			async: false,
 			callback: function(r) {
 					if (r.message) {
+					resp=r.message;
 							console.log("method_doc_data" + JSON.stringify(r.message));
 							}
 			} //end of callback fun..
 	}) //end of frappe call..
-
+	return resp;
 }
 function transfer_material_internally(doc_object){
 	//var req_items = doc_object.req_items
