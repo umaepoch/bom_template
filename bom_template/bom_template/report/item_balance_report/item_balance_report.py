@@ -91,8 +91,8 @@ def get_columns(process_list):
 def get_mrec_data(filters):
 	if filters.get("item_made_fil"):
 		mrec_data = frappe.db.sql("""select mrec.name,mrec.item_made,mrec.units_s_r,mrec.manufacturing_record_type,mrec.manufacturing_method,mrec.start_process,mmd.process_order,mmd.pch_process,mrec.outbound_warehouse,mrec.sub_contractor,mrec.target_warehouse,mrec.receiving_warehouse from `tabPch Manufacturing Record`    mrec,`tabPch Manufacturing Method Details` mmd where   mrec.docstatus = 1 and mrec.item_made = %s  and mmd.name = mrec.start_process order by mmd.process_order """, (filters.get("item_made_fil")), as_dict=1)
-	#else:
-	#mrec_data = frappe.db.sql("""select mrec.name,mrec.item_made,mrec.units_s_r,mrec.manufacturing_method,mrec.start_process,mmd.process_order,mmd.pch_process,mrec.outbound_warehouse,mrec.sub_contractor,mrec.target_warehouse,mrec.receiving_warehouse from `tabPch Manufacturing Record`    mrec,`tabPch Manufacturing Method Details` mmd where   mrec.docstatus = 1 and  mmd.name = mrec.start_process order by mmd.process_order """,as_dict=1)
+	else:
+		mrec_data = frappe.db.sql("""select mrec.name,mrec.item_made,mrec.units_s_r,mrec.manufacturing_record_type,mrec.manufacturing_method,mrec.start_process,mmd.process_order,mmd.pch_process,mrec.outbound_warehouse,mrec.sub_contractor,mrec.target_warehouse,mrec.receiving_warehouse from `tabPch Manufacturing Record`    mrec,`tabPch Manufacturing Method Details` mmd where   mrec.docstatus = 1   and mmd.name = mrec.start_process order by mmd.process_order """, as_dict=1)
 
 	mrec_json = {}   #{"item1":{"process1":[query_data,query_data], "process2":[query_data,query_data] }}
 	for mrec in mrec_data :
@@ -127,3 +127,15 @@ def get_process_list(method_name):
 		process_list.append(process["pch_process"])
 	return process_list
 
+@frappe.whitelist()
+def get_method_based_on_item(item_made):
+	method_list=frappe.db.sql("""select parent from `tabPch Manufacturing Method Child` where item_made=%s""",(item_made),as_dict=1);
+	methods=[];
+	length=len(method_list);
+	if(length==1):
+		methods.append(method_list[0]["parent"]);
+	else:
+		for method in method_list:
+			methods.append(method.parent);
+	#print(methods);
+	return methods
