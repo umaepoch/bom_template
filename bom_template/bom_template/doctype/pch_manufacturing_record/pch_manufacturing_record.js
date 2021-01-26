@@ -427,17 +427,30 @@ frappe.ui.form.on("Pch Manufacturing Record","end_process",function(frm,cdt,cdn)
 frappe.ui.form.on("Pch Mrec  Child Process", {
 labour_rate_per_unit: function (frm, cdt, cdn) {
 		console.log("child_tanle_triggers is working");
+		var sum=0;
 		var row = locals[cdt][cdn];
+		console.log(row);
 		var labour_rate_per_unit_temp = row.labour_rate_per_unit;
+		
 		console.log("labour_rate_per_unit_temp"+labour_rate_per_unit_temp);
 		if(labour_rate_per_unit_temp){
 			var units_s_r = cur_frm.doc.units_s_r ;
 			var labour_amount = labour_rate_per_unit_temp * units_s_r
 			row.labour_amount = labour_amount ;
-      refresh_field("labour_amount");
-			refresh_field(frm.doc.process_items);
+     
 		}
-
+		
+		var d=cur_frm.doc.process_items;
+		for(var i=0;i<d.length;i++)
+		{
+		
+			var lr=d[i].labour_rate_per_unit;
+			sum+=lr;
+			console.log(sum);
+		}
+		cur_frm.set_value("subcontracting_rate",sum);
+		 refresh_field("labour_amount");
+			refresh_field(frm.doc.process_items);
 	}
 
 });
