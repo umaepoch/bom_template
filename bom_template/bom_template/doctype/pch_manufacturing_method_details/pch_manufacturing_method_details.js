@@ -32,6 +32,7 @@ frappe.ui.form.on("Pch Manufacturing Method Details", "pch_method", function(frm
 		frappe.model.set_value(child.doctype,child.name,"uom",l1[0]["qty_uom"]);
 		frappe.model.set_value(child.doctype,child.name,"qty",l1[0]["qty_made"]);
 		frappe.model.set_value(child.doctype,child.name,"conversion_factor",l1[0]["conversion_factor"]);
+		frappe.model.set_value(child.doctype,child.name,"stock_uom",l1[0]["stock_uom"]);
 		var prod=l1[0]["conversion_factor"]*l1[0]["qty_made"];
 		frappe.model.set_value(child.doctype,child.name,"qty_in_stock_uom",prod);
 		refresh_field("items");
