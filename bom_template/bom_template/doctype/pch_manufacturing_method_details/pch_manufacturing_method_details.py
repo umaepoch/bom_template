@@ -75,12 +75,12 @@ def get_method_details(parent,item_made):
 		if(m.method_name== parent):
 			if(m.method_makes=='Multiple Items'):
 				#print(m.method_makes);
-				item_dict=frappe.db.sql("""select item_made,qty_made,qty_uom from `tabPch Manufacturing Method Child` where parent=%s and item_made=%s""",(parent,m.master_item),as_dict=1);
+				item_dict=frappe.db.sql("""select item_made,qty_made,qty_uom,conversion_factor from `tabPch Manufacturing Method Child` where parent=%s and item_made=%s""",(parent,m.master_item),as_dict=1);
 				#print("multiple");
 				break;
 			#print(item_dict,"Here");
 			elif(m.method_makes=='Single Item'):
-				item_dict=frappe.db.sql("""select item_made,qty_made,qty_uom from `tabPch Manufacturing Method Child` where parent=%s and item_made=%s """,(parent,item_made),as_dict=1);
+				item_dict=frappe.db.sql("""select item_made,qty_made,qty_uom,conversion_factor from `tabPch Manufacturing Method Child` where parent=%s and item_made=%s """,(parent,item_made),as_dict=1);
 				#print('Single');
 				break;
 			#print(item_dict,"Single");
@@ -88,4 +88,10 @@ def get_method_details(parent,item_made):
 				pass;
 			
 	return item_dict;
+
+@frappe.whitelist()
+def populate_uom_cf(item_code):
+	response_dict=frappe.db.sql("""select stock_uom,uom,conversion_factor from `tabItem` inner join `tabUOM Conversion Detail` on `tabItem`.name=`tabUOM Conversion Detail`.parent where item_code=%s""",(item_code),as_dict=1);
+	print(response_dict);
+	return response_dict
 	

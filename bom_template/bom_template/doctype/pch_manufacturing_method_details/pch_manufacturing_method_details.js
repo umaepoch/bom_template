@@ -31,6 +31,9 @@ frappe.ui.form.on("Pch Manufacturing Method Details", "pch_method", function(frm
 		frappe.model.set_value(child.doctype,child.name,"item_code",l1[0]["item_made"]);
 		frappe.model.set_value(child.doctype,child.name,"uom",l1[0]["qty_uom"]);
 		frappe.model.set_value(child.doctype,child.name,"qty",l1[0]["qty_made"]);
+		frappe.model.set_value(child.doctype,child.name,"conversion_factor",l1[0]["conversion_factor"]);
+		var prod=l1[0]["conversion_factor"]*l1[0]["qty_made"];
+		frappe.model.set_value(child.doctype,child.name,"qty_in_stock_uom",prod);
 		refresh_field("items");
 	}
 
@@ -212,3 +215,49 @@ args:{
 });
 	return methods
 }
+
+frappe.ui.form.on("Pch Manufacturing Method Details RM Child",{qty_per_unit_made:function(frm,cdt,cdn){
+
+	console.log("Trigger");
+	var row=frappe.get_doc(cdt,cdn);
+	
+	//row.conversion_factor=11;
+	console.log(row.item_code);
+	
+	var resp=populate_uoms_and_cf(row.item_code);
+	
+	row.conversion_factor=resp[0]["conversion_factor"];
+	row.qty_uom=resp[0]["uom"];
+	row.stock_uom=resp[0]["stock_uom"];
+	var qty_per_unit=row.qty_per_unit_made;
+	var conv_fact=row.conversion_factor
+	var prod=qty_per_unit*conv_fact;
+	console.log(qty_per_unit,conv_fact);
+	row.qty_in_stock_uom=prod;
+
+	}	
+	});
+function populate_uoms_and_cf(item_code){
+
+	var r1;
+	frappe.call({
+	method:"bom_template.bom_template.doctype.pch_manufacturing_method_details.pch_manufacturing_method_details.populate_uom_cf",
+	args:{
+		"item_code":item_code
+	},
+	async:false,
+	callback:function(r){
+	
+		if(r.message){
+		
+			r1=r.message;
+		}
+	}
+
+
+
+});
+	console.log(r1);
+	return r1
+}
+
