@@ -94,7 +94,7 @@ def validate_start_and_end_process(start_process,end_process):
 def send_material_for_manufacturing(entity):
 	entity = json.loads(entity)
 	item_payload_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"item_payload_account")
-
+	units=entity.get("units_to_be_sr");
 	"""
 	smfm_transaction_order =[]
 	smfm_transaction_order[0]="Material Issue"
@@ -156,9 +156,11 @@ def send_material_for_manufacturing(entity):
 
 			receipt_items_list = []
 			for i_row in entity.get("method_items"):
+				val=i_row.get("qty_made")
+				actual_qty=units*val;
 				item_dic = {
 				"item_code" :i_row.get("item_made") ,
-				"qty":i_row.get("qty_made"),
+				"qty":actual_qty,
 				"uom":i_row.get("qty_uom"),
 				"conversion_factor" : i_row.get("conversion_factor"),
 				"t_wh":entity.get("outbound_warehouse"),
@@ -284,15 +286,17 @@ def receive_material_for_manufacturing(entity):
 	entity = json.loads(entity)
 	labour_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"labour_account")
 	item_payload_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"item_payload_account")
-
+	units=entity.get("units_s_r")
 	response=[];
 	#make_transfer
 	#from method_item table  Subcontractor Warehouse== sourch wh and Receiving Warehouse==
 	transfer_items_list = []
 	for i_row in entity.get("method_items"):
+		val=i_row.get("qty_made")
+		actual_qty=units*val;
 		item_dic = {
 		"item_code" :i_row.get("item_made") ,
-		"qty":i_row.get("qty_made"),
+		"qty":actual_qty,
 		"uom":i_row.get("qty_uom"),
 		"conversion_factor" : i_row.get("conversion_factor"),
 		"s_wh":entity.get("target_warehouse"), #subcontractor wh
