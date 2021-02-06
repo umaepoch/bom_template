@@ -268,6 +268,7 @@ function send_material_for_manufacturing(doc_object){
 	var location =  doc_object.location //subContractor wh
 	var start_process =  doc_object.start_process
 	var subcontracting_rate =  doc_object.subcontracting_rate
+	var units_to_be_sr=doc_object.units_s_r
 	var resp;
 	var entity ={
 		"req_items":req_items,
@@ -276,7 +277,8 @@ function send_material_for_manufacturing(doc_object){
 		"target_warehouse":target_warehouse,
 		"start_process":start_process,
 		"location":location,
-		"subcontracting_rate":subcontracting_rate
+		"subcontracting_rate":subcontracting_rate,
+		"units_to_be_sr":units_to_be_sr
 	}
 
 	frappe.call({
