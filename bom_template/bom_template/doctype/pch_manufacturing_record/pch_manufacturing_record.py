@@ -386,7 +386,7 @@ def cancel_single_se(mat_transfer):
 @frappe.whitelist()
 def move_material_internally(entity):
 	entity = json.loads(entity)
-	
+	units=entity.get("units_s_r")
 	
 	labour_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"labour_account")
 	item_payload_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"item_payload_account")
@@ -395,13 +395,15 @@ def move_material_internally(entity):
 	#from method_item table  Subcontractor Warehouse== sourch wh and Receiving Warehouse==
 	transfer_items_list = []
 	for i_row in entity.get("method_items"):
+		val=i_row.get("qty_made");
+		total_qty=units*val;
 		item_dic = {
 		"item_code" :i_row.get("item_made") ,
-		"qty":i_row.get("qty_made"),
+		"qty":total_qty,
 		"uom":i_row.get("qty_uom"),
 		"conversion_factor" : i_row.get("conversion_factor"),
-		"s_wh":entity.get("outbound_warehouse"), #Internal warehouse from which the material needs to be transferred to process ob
-		"t_wh":entity.get("receiving_warehouse"),
+		"s_wh":entity.get("receiving_warehouse"), 
+		"t_wh":entity.get("outbound_warehouse"),
 		"item_payload_account":item_payload_account
 		
 		}
