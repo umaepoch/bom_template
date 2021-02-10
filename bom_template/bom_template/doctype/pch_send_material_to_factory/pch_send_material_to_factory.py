@@ -4,7 +4,9 @@
 
 from __future__ import unicode_literals
 import frappe
+import json
 from frappe.model.document import Document
 
-class PchSendMaterialtoFactory(Document):
+class PchSendMaterialtoFactory1(Document):
 	pass
+

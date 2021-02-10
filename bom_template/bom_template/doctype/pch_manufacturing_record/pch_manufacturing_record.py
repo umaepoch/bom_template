@@ -137,7 +137,8 @@ def send_material_for_manufacturing(entity):
 		trans_entity = {
 		"items":entity.get("method_items"),
 		"s_wh":entity.get("outbound_warehouse"),
-		"t_wh":entity.get("target_warehouse")
+		"t_wh":entity.get("target_warehouse"),
+		"units_to_be_sr":entity.get("units_to_be_sr")
 		}
 		labour_account = frappe.db.get_value("Pch Locations", {"name":entity.get("location")},"labour_account")
 		trans_entity["labour_account"] = labour_account
@@ -225,10 +226,13 @@ def send_material_for_manufacturing(entity):
 
 def make_transfer(trans_entity):
 	transfer_items_list = []
+	units=trans_entity.get("units_to_be_sr");
 	for i_row in trans_entity.get("items"):
+		val=i_row.get("qty_made")
+		actual_qty=units*val;
 		item_dic = {
 		"item_code" :i_row.get("item_made") ,
-		"qty":i_row.get("qty_made"),
+		"qty":actual_qty,
 		"uom":i_row.get("qty_uom"),
 		"conversion_factor" : i_row.get("conversion_factor"),
 		"s_wh":trans_entity.get("s_wh"),
