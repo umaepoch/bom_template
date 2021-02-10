@@ -184,12 +184,21 @@ def send_material_for_manufacturing(entity):
 				#print "se_transfer3 created ",se_transfer3
 				else:
 					response.append({"Name":se_transfer3[0]["Name"],"Status":"Not Created","Stock Entry Type":"Material Transfer"});
+				doc1=frappe.get_doc("Stock Entry", se_issue[0]["Name"]);
+				doc1.docstatus=2
+				doc1.save()
+				doc2=frappe.get_doc("Stock Entry", se_receipt[0]["Name"]);
+				doc2.docstatus=2
+				doc2.save()	
+					
 					
 				
 				
 			else:
 				response.append({"Name":se_receipt[0]["Name"],"Status":"Not Created","Stock Entry Type":"Material Receipt"});
-			
+				doc1=frappe.get_doc("Stock Entry", se_issue[0]["Name"]);
+				doc1.docstatus=2
+				doc1.save()		
 	
 				
 		else:
@@ -201,6 +210,9 @@ def send_material_for_manufacturing(entity):
 				response.append({"Name":se_transfer2[0]["Name"],"Status":"Created","Stock Entry Type":"Material Transfer"});
 			else:
 				response.append({"Name":se_transfer2[0]["Name"],"Status":"Not Created","Stock Entry Type":"Material Transfer"});
+				doc1=frappe.get_doc("Stock Entry", se_issue[0]["Name"]);
+				doc1.docstatus=2
+				doc1.save()
 				print(response)
 			
 		
@@ -410,4 +422,12 @@ def move_material_internally(entity):
 		response.append({"Name":se_transfer,"Status":"Not Created"});
 		print(response)
 		return response
-
+@frappe.whitelist()
+def change_doc_status(name):
+	doc = frappe.get_doc('Pch Manufacturing Record', {'name': name,'docstatus':('<', 2)}) 
+	if(doc):
+		doc.docstatus=2
+		doc.save()
+	else:
+		frappe.throw("No such un-cancelled document")
+	return "draft mode"
