@@ -91,6 +91,26 @@ frappe.ui.form.on("Pch Manufacturing Record", "on_submit", function(frm, cdt, cd
 				}
 			}
 			cur_frm.save('Submit');
+			if(r[i]["Status"]=="Not Created")
+			{
+			
+				console.log('dddd',r[i]["Status"]);
+				frappe.msgprint("Did not Submit");
+				cur_frm.save('Cancel');
+				if(r[i]["Stock Entry Type"]=="Material Transfer")
+				{
+					//cur_frm.set_value("pch_material_issue","");
+					//cur_frm.set_value("pch_material_receipt","");
+					console.log(cur_frm.doc.docstatus,"Okkkkkkkkkk");
+					if(cur_frm.doc.docstatus==1)
+					{
+					
+						change_docstatus(cur_frm.doc.name);
+						
+					}
+				}
+				
+			}
 		}
 		
 	}
@@ -107,6 +127,22 @@ frappe.ui.form.on("Pch Manufacturing Record", "on_submit", function(frm, cdt, cd
 			}		
 			cur_frm.save('Submit');
 		}
+		
+		if(r1[0]["Status"]=="Not Created")
+		
+		{
+				
+			if(r1[0]["Stock Entry Type"]=="Material Transfer")
+				{
+					
+					if(cur_frm.doc.docstatus==1)
+					{
+					
+						change_docstatus(cur_frm.doc.name);
+						
+					}
+				}
+		}
 	}
 	if(m_record_type=="Send Materials to Internal Storage WH")
 	{
@@ -122,10 +158,46 @@ frappe.ui.form.on("Pch Manufacturing Record", "on_submit", function(frm, cdt, cd
 			cur_frm.save('Submit');
 		
 		}
+		if(r3[0]["Status"]=="Not Created")
+		
+		{
+				
+			if(r3[0]["Stock Entry Type"]=="Material Transfer")
+				{
+					
+					if(cur_frm.doc.docstatus==1)
+					{
+					
+						change_docstatus(cur_frm.doc.name);
+						
+					}
+				}
+		}
 
 	
 	}
 });
+
+function change_docstatus(name){
+
+	var resp;
+	frappe.call({
+				method:"bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.change_doc_status",
+args:{
+"name":name},
+async:false,
+callback:function(r){
+
+	if(r.message){
+	
+		 resp=r.message;
+	}
+}
+		
+	})
+	return resp;
+
+}
 
 frappe.ui.form.on("Pch Manufacturing Record","after_cancel",function(frm,cdt,cdn){
 	console.log("After c");
