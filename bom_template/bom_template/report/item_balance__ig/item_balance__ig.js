@@ -9,7 +9,7 @@ frappe.query_reports["Item Balance  Ig"] = {
         "label": __("Item"),
         "fieldtype": "Link",
         "options": "Item",
-        "reqd": 1
+        "reqd": 0
 	},
 	{
         "fieldname": "ig_filter",
