@@ -456,6 +456,19 @@ frappe.ui.form.on("Pch Manufacturing Record", "get_required_items", function(frm
 	set_start_end_process_raw_materials(start_process,end_process,method,units_s_r)
 });
 
+frappe.ui.form.on("Pch Reqired Items",{ 
+qty_of_raw_material_being_sent:function(frm, cdt, cdn) {
+	
+	var d=locals[cdt][cdn]
+	var cf=d.conversion_factor;
+	var qty_to_be_sent=d.qty_of_raw_material_being_sent
+	var total_qty=qty_to_be_sent*cf
+	console.log(total_qty)
+	d.dispatched_quantity_in_uom=total_qty
+	}
+	
+});
+
 frappe.ui.form.on("Pch Manufacturing Record", "get_processs", function(frm, cdt, cdn) {
 	//console.log("Button clicked");
 	//validation  start_process,end_process,manufacturing_method are mandatory to run this method
