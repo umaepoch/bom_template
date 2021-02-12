@@ -185,12 +185,12 @@ def send_material_for_manufacturing(entity):
 				#print "se_transfer3 created ",se_transfer3
 				else:
 					response.append({"Name":se_transfer3[0]["Name"],"Status":"Not Created","Stock Entry Type":"Material Transfer"});
-				doc1=frappe.get_doc("Stock Entry", se_issue[0]["Name"]);
-				doc1.docstatus=2
-				doc1.save()
-				doc2=frappe.get_doc("Stock Entry", se_receipt[0]["Name"]);
-				doc2.docstatus=2
-				doc2.save()	
+					doc1=frappe.get_doc("Stock Entry", se_issue[0]["Name"]);
+					doc1.docstatus=2
+					doc1.save()
+					doc2=frappe.get_doc("Stock Entry", se_receipt[0]["Name"]);
+					doc2.docstatus=2
+					doc2.save()	
 					
 					
 				
