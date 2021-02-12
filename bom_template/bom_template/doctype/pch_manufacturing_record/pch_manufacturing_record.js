@@ -97,11 +97,35 @@ frappe.ui.form.on("Pch Manufacturing Record", "on_submit", function(frm, cdt, cd
 				console.log('dddd',r[i]["Status"]);
 				frappe.msgprint("Did not Submit");
 				cur_frm.save('Cancel');
+				if(r[i]["Stock Entry Type"]=="Material Issue")
+				{
+					//cur_frm.set_value("pch_material_issue","");
+					//cur_frm.set_value("pch_material_receipt","");
+					//console.log(cur_frm.doc.docstatus,"Okkkkkkkkkk");
+					if(cur_frm.doc.docstatus==1)
+					{
+					
+						change_docstatus(cur_frm.doc.name);
+						
+					}
+				}
+				if(r[i]["Stock Entry Type"]=="Material Receipt")
+				{
+					//cur_frm.set_value("pch_material_issue","");
+					//cur_frm.set_value("pch_material_receipt","");
+					//console.log(cur_frm.doc.docstatus,"Okkkkkkkkkk");
+					if(cur_frm.doc.docstatus==1)
+					{
+					
+						change_docstatus(cur_frm.doc.name);
+						
+					}
+				}
 				if(r[i]["Stock Entry Type"]=="Material Transfer")
 				{
 					//cur_frm.set_value("pch_material_issue","");
 					//cur_frm.set_value("pch_material_receipt","");
-					console.log(cur_frm.doc.docstatus,"Okkkkkkkkkk");
+					//console.log(cur_frm.doc.docstatus,"Okkkkkkkkkk");
 					if(cur_frm.doc.docstatus==1)
 					{
 					
@@ -385,7 +409,8 @@ function transfer_material_internally(doc_object){
 		"outbound_warehouse":outbound_warehouse,
 		"receiving_warehouse":receiving_warehouse,
 		"start_process":start_process,
-		"units_s_r":units_s_r
+		"units_s_r":units_s_r,
+		"location":location
 		
 	}
 	console.log("entity" + JSON.stringify(entity));
