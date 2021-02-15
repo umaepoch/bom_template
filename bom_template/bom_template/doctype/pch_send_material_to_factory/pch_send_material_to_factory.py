@@ -7,6 +7,6 @@ import frappe
 import json
 from frappe.model.document import Document
 
-class PchSendMaterialtoFactory1(Document):
+class PchSendMaterialtoFactory(Document):
 	pass
 
