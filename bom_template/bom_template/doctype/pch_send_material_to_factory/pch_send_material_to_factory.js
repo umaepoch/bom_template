@@ -12,6 +12,7 @@ frappe.ui.form.on("Pch Send Material to Factory","corporate_warehouse",function(
 	var start_process=cur_frm.doc.start_process;
 	var end_process=cur_frm.doc.end_process;
 	var method=cur_frm.doc.manufacturing_method;
+	var units_s_r=cur_frm.doc.units_s_r;
 	var r=get_reqd_items(item,start_process,end_process,method);
 	console.log(r);
 	
