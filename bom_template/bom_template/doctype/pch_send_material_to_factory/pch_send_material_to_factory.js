@@ -30,7 +30,7 @@ frappe.ui.form.on("Pch Send Material to Factory","corporate_warehouse",function(
 		frappe.model.set_value(child.doctype, child.name, "qty_in_stock_uom", r[i]['qty_per_unit_made']);*/
 		frappe.model.set_value(child.doctype, child.name, "item_code", r[i]['item_name']);
 				frappe.model.set_value(child.doctype, child.name, "qty_uom", r[i]['qty_uom']);
-				frappe.model.set_value(child.doctype, child.name, "qty_per_unit_made", items_list[i]['qty_per_unit_made']);
+				frappe.model.set_value(child.doctype, child.name, "qty_per_unit_made", r[i]['qty_per_unit_made']);
 				frappe.model.set_value(child.doctype, child.name, "qty_in_stock_uom", r[i]['qty_in_stock_uom']);
 				frappe.model.set_value(child.doctype, child.name, "total_qty",total_qty);
 				//frappe.model.set_value(child.doctype, child.name, "qty_of_raw_material_being_sent", quantity_to_be_sent);
