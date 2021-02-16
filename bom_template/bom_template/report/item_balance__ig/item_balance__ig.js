@@ -5,6 +5,13 @@
 frappe.query_reports["Item Balance  Ig"] = {
 	"filters": [
 	{
+        "fieldname": "group_wise",
+        "label": __("Group Wise"),
+        "fieldtype": "Select",
+        "options": ["Item","Item Group"],
+        "reqd": 1
+	},
+	{
         "fieldname": "item_filter",
         "label": __("Item"),
         "fieldtype": "Link",
