@@ -19,13 +19,26 @@ frappe.ui.form.on("Pch Send Material to Factory","corporate_warehouse",function(
 	{
 	
 		var child=cur_frm.add_child("items_required");
-		frappe.model.set_value(child.doctype, child.name, "item_code", r[i]['item_name']);
+		var total_qty = units_s_r * r[i]['qty_per_unit_made']
+		/*frappe.model.set_value(child.doctype, child.name, "item_code", r[i]['item_name']);
 		frappe.model.set_value(child.doctype, child.name, "qty_uom", r[i]['qty_uom']);
 		frappe.model.set_value(child.doctype, child.name, "qty_per_unit_made", r[i]['qty_per_unit_made']);
 		frappe.model.set_value(child.doctype, child.name, "consumption_type", r[i]['consumption_type']);
 		frappe.model.set_value(child.doctype, child.name, "stock_uom", r[i]['stock_uom']);
 		frappe.model.set_value(child.doctype, child.name, "conversion_factor", r[i]['conversion_factor']);
-		frappe.model.set_value(child.doctype, child.name, "qty_in_stock_uom", r[i]['qty_per_unit_made']);
+		frappe.model.set_value(child.doctype, child.name, "qty_in_stock_uom", r[i]['qty_per_unit_made']);*/
+		frappe.model.set_value(child.doctype, child.name, "item_code", r[i]['item_name']);
+				frappe.model.set_value(child.doctype, child.name, "qty_uom", r[i]['qty_uom']);
+				frappe.model.set_value(child.doctype, child.name, "qty_per_unit_made", items_list[i]['qty_per_unit_made']);
+				frappe.model.set_value(child.doctype, child.name, "qty_in_stock_uom", r[i]['qty_in_stock_uom']);
+				frappe.model.set_value(child.doctype, child.name, "total_qty",total_qty);
+				//frappe.model.set_value(child.doctype, child.name, "qty_of_raw_material_being_sent", quantity_to_be_sent);
+				frappe.model.set_value(child.doctype, child.name, "consumption_type", r[i]['consumption_type']);
+				frappe.model.set_value(child.doctype, child.name, "stock_uom", r[i]['stock_uom']);
+				frappe.model.set_value(child.doctype, child.name, "conversion_factor", r[i]['conversion_factor']);
+				frappe.model.set_value(child.doctype, child.name, "mmd", r[i]['name']);
+				//frappe.model.set_value(child.doctype, child.name, "dispatched_quantity_in_uom",dispatched_qty);
+				frappe.model.set_value(child.doctype, child.name, "operand", r[i]['operand']);
 		
 	
 	}
@@ -316,3 +329,15 @@ function receive_material_at_factory(doc_object){
 	return resp
 
 }
+frappe.ui.form.on("Pch Reqired Items",{ 
+qty_of_raw_material_being_sent:function(frm, cdt, cdn) {
+	
+	var d=locals[cdt][cdn]
+	var cf=d.conversion_factor;
+	var qty_to_be_sent=d.qty_of_raw_material_being_sent
+	var total_qty=qty_to_be_sent*cf
+	console.log(total_qty)
+	d.dispatched_quantity_in_uom=total_qty
+	}
+	
+});
