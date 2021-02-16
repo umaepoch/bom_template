@@ -89,7 +89,7 @@ def create_stock_entry(se_entity):
 @frappe.whitelist()
 def send_material_to_factory(entity):
 	entity = json.loads(entity)
-	internal_transfer_account = frappe.db.get_value("pch Bom Template Settings",{"internal_mat_transfer_acc":"Inter Location Material Transfer Account - RAKHI"}, "internal_mat_transfer_acc")
+	internal_transfer_account = "Inter Location Material Transfer Account - RAKHI"
 	location=entity.get("location");
 	company=frappe.db.get_value("Pch Locations",{"name":entity.get("location")},"company");
 	print(internal_transfer_account)
@@ -133,7 +133,7 @@ def send_material_to_factory(entity):
 @frappe.whitelist()
 def receive_material_at_factory(entity):
 	entity = json.loads(entity)
-	internal_transfer_account = frappe.db.get_value("pch Bom Template Settings",{"internal_mat_transfer_acc":"Inter Location Material Transfer Account - RAKHI"}, "internal_mat_transfer_acc")
+	internal_transfer_account = "Inter Location Material Transfer Account - RAKHI"
 	location=entity.get("location");
 	company=frappe.db.get_value("Pch Locations",{"name":entity.get("location")},"company");
 	print(internal_transfer_account)
