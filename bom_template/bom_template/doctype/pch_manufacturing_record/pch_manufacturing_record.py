@@ -411,8 +411,8 @@ def move_material_internally(entity):
 		"qty":total_qty,
 		"uom":i_row.get("qty_uom"),
 		"conversion_factor" : i_row.get("conversion_factor"),
-		"s_wh":entity.get("receiving_warehouse"), 
-		"t_wh":entity.get("outbound_warehouse"),
+		"s_wh":entity.get("outbound_warehouse"), 
+		"t_wh":entity.get("receiving_warehouse"),
 		"item_payload_account":item_payload_account
 		
 		}
