@@ -509,8 +509,10 @@ frappe.ui.form.on("Pch Manufacturing Record", "get_processs", function(frm, cdt,
 //what if selected process or location has no wh details?
 frappe.ui.form.on("Pch Manufacturing Record", "start_process", function(frm, cdt, cdn) {
 	var start_process_temp = cur_frm.doc.start_process;
-
+	var type=cur_frm.doc.manufacturing_record_type;
 	var location_name = cur_frm.doc.location;
+	if(type=="Send Material for Manufacturing" || type=="Receive Material from Manufacturing")
+	{
 	if (location_name && start_process_temp){
 		var process_name = get_process_name(start_process_temp)
 		console.log("process_name",process_name)
@@ -518,19 +520,45 @@ frappe.ui.form.on("Pch Manufacturing Record", "start_process", function(frm, cdt
 		console.log("outbound_warehouse_temp",outbound_warehouse_temp)
 		cur_frm.set_value("outbound_warehouse", outbound_warehouse_temp);
 	}
+	}
+	if(type=="Send Materials to Internal Storage WH")
+	{
+		
+		if (location_name && start_process_temp){
+		var process_name = get_process_name(start_process_temp)
+		console.log("process_name",process_name)
+		var outbound_warehouse_temp = get_wh_ac_to_location(location_name,"inbound_warehouse",process_name);
+		console.log("outbound_warehouse_temp",outbound_warehouse_temp)
+		cur_frm.set_value("outbound_warehouse", outbound_warehouse_temp);
+	}
+	}
 
 });
 
 frappe.ui.form.on("Pch Manufacturing Record","end_process",function(frm,cdt,cdn){
 	var validation_flag = end_process_field_validation();
+	var type=cur_frm.doc.manufacturing_record_type;
 	if (validation_flag == 1){
 		var location_name = cur_frm.doc.location;
 		var end_process_temp = cur_frm.doc.end_process;
+		if(type=="Send Material for Manufacturing" || type=="Receive Material from Manufacturing"){
 		if (location_name && end_process_temp){
 			var process_name = get_process_name(end_process_temp)
 			var inbound_warehouse_temp = get_wh_ac_to_location(location_name,"inbound_warehouse",process_name);
 			cur_frm.set_value("receiving_warehouse", inbound_warehouse_temp);
 		}
+		}
+		if(type=="Send Materials to Internal Storage WH")
+	{
+		
+		if (location_name && end_process_temp){
+		var process_name = get_process_name(end_process_temp)
+		console.log("process_name",process_name)
+		var outbound_warehouse_temp = get_wh_ac_to_location(location_name,"outbound_warehouse",process_name);
+		console.log("outbound_warehouse_temp",outbound_warehouse_temp)
+		cur_frm.set_value("receiving_warehouse", outbound_warehouse_temp);
+	}
+	}
 	}
 });
 
