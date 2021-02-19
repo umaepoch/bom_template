@@ -18,7 +18,8 @@ frappe.ui.form.on('Pch Global Process',"is_global",function(frm,cdt,cdn){
 	{
 		var update;
 		var name=check[0]["Name"];
-		frappe.confirm(
+		frappe.msgprint("Document with id"+" "+name+"is already set as a Global Process order, please uncheck it if you want to set this as a Global Process");
+		/*frappe.confirm(
     'Are you sure you want to set this as a global process?',
     function(){
         	  show_alert('This configuration is now set as a Global Process Order')
@@ -31,7 +32,7 @@ frappe.ui.form.on('Pch Global Process',"is_global",function(frm,cdt,cdn){
         window.close();
         cur_frm.set_value("is_global",0)
     }
-)
+)*/
 	}
 
 	
