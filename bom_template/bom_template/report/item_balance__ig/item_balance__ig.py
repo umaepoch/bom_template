@@ -174,107 +174,73 @@ def get_item_row_pass_through_data(item):
 	method_name = frappe.db.get_value("Pch Manufacturing Method Child", {"item_made": item}, "parent")
 	process_list_for_item = get_process_ac_to_item(item)
 	item_process_column_key_list = get_process_column_key_list(process_list_for_item)
+
 	parent_row_dic = {"item_code": item, "manufacturing_method": method_name}
 
-
-
-	#supplier.
-	#find distinct supplier
-	mrec_sup_dic = frappe.db.sql("""
-					SELECT 
-				    DISTINCT sub_contractor
-					FROM
-				    `tabPch Manufacturing Record`
-					WHERE
-					item_made = %s and manufacturing_method = %s and docstatus = 1 
-					""",
-					(item, method_name), as_dict=1)
-
-	supplier_list = []
-
-	for mrec in mrec_sup_dic:
-		supplier_list.append(mrec["sub_contractor"])
-
-	all_supplier_item_row_data_list = []
-	#calculate item row for each supplier
-	for supplier in supplier_list :
-		item_row_pass_through_data_ac_to_supplier = get_item_row_pass_through_data_ac_to_supplier(item, method_name,item_process_column_key_list,supplier)
-		all_supplier_item_row_data_list.append(item_row_pass_through_data_ac_to_supplier)
-
-	item_supplier_total_process_wise_data_dics = {}  # this dic contains sum of all supplier keys
-	for item_process_key in item_process_column_key_list:
-		for item_row_data in all_supplier_item_row_data_list: #each supplier row item row dic
-			if item_row_data.get(item_process_key):
-				if item_supplier_total_process_wise_data_dics.get(item_process_key):
-					item_supplier_total_process_wise_data_dics[item_process_key] += item_row_data.get(item_process_key)
-				else:
-					item_supplier_total_process_wise_data_dics[item_process_key] = item_row_data.get(item_process_key)
-
-
-	parent_row_dic.update(item_supplier_total_process_wise_data_dics)
-
-	return parent_row_dic
-
-
-
-
-def get_item_row_pass_through_data_ac_to_supplier(item,method_name,item_process_column_key_list,supplier):
-
-	mrec_dic = frappe.db.sql("""
-					SELECT 
-				    manufacturing_record_type,units_s_r, start_process ,end_process ,item_group,sub_contractor
-					FROM
-				    `tabPch Manufacturing Record`
-					WHERE
-					item_made = %s and manufacturing_method = %s and sub_contractor =%s and docstatus = 1 
-					ORDER BY 
-					creation asc""",
-					(item, method_name,supplier), as_dict=1)
+	mrec_dic =  frappe.db.sql("""
+				SELECT 
+			    manufacturing_record_type,units_s_r, start_process ,end_process ,item_group
+				FROM
+			    `tabPch Manufacturing Record`
+				WHERE
+				item_made = %s and manufacturing_method = %s and docstatus = 1 
+				ORDER BY 
+				creation asc""",
+				(item, method_name ), as_dict=1)
 
 	# from process_column_bind_list i will get data all column names along with process asingned for that column
 	is_differend_end_process = 0
 	process_wise_data_dics = {}
 
-	# print "mrec_dic", mrec_dic
-	for mrec in mrec_dic:
+	#print "mrec_dic", mrec_dic
+	for mrec in mrec_dic :
+
+		#new code start ..below are the code for one transaction wee need to sum all transaction using dictionary tommorow
 		process_wise_data_dics["item_group"] = mrec.get("item_group")
 		start_process_karigar_key = get_process_name(mrec.get("start_process")) + SPACE + KARIGAR_SUFFIX
 		end_process_karigar_key = get_process_name(mrec.get("end_process")) + SPACE + KARIGAR_SUFFIX
 		end_process_inbound_key = get_process_name(mrec.get("end_process")) + SPACE + INBOUND_SUFFIX
-		end_process_outbound = get_process_name(mrec.get("end_process")) + SPACE + OUTBOUND_SUFFIX
+		end_process_outbound_key = get_process_name(mrec.get("end_process")) + SPACE + OUTBOUND_SUFFIX
 
-		if mrec.get("manufacturing_record_type") in ["Send Material for Manufacturing",
-													 "Receive Material from Manufacturing"]:
-			if is_differend_end_process in [0, 1]:
-				if mrec.get("start_process") == mrec.get("end_process"):
-					is_differend_end_process = 0
-					if mrec.get("manufacturing_record_type") == "Send Material for Manufacturing":
-						process_wise_data_dics[start_process_karigar_key] = mrec.get("units_s_r")
-					elif mrec.get("manufacturing_record_type") == "Receive Material from Manufacturing":
-						process_wise_data_dics[end_process_inbound_key] = mrec.get("units_s_r")
-				else:
-					# print "start =/ end process else"
-					is_differend_end_process = 1
-					if mrec.get("manufacturing_record_type") == "Send Material for Manufacturing":
-						process_wise_data_dics[start_process_karigar_key] = mrec.get("units_s_r")
-					elif mrec.get(
-							"manufacturing_record_type") == "Receive Material from Manufacturing":  # end process inbound
-						process_wise_data_dics[end_process_inbound_key] = mrec.get("units_s_r")
-						in_between_s_and_e_process_data = get_in_between_s_and_e_process_data(start_process_karigar_key,
-																							  end_process_inbound_key,
-																							  item_process_column_key_list,
-																							  mrec.get("units_s_r"))
-						process_wise_data_dics.update(in_between_s_and_e_process_data)
-				# print "in_between_s_and_e_process_data", in_between_s_and_e_process_data
-
-		elif mrec.get("manufacturing_record_type") == "Send Materials to Internal Storage WH":
-			process_wise_data_dics[end_process_outbound] = mrec.get("units_s_r")
-	# print "process_wise_data_dics",process_wise_data_dics
-
-	#print "supplier : ", supplier,"row data- ",process_wise_data_dics
+		if mrec.get("manufacturing_record_type") == "Send Material for Manufacturing":
+			if process_wise_data_dics.get(start_process_karigar_key) :
+				process_wise_data_dics[start_process_karigar_key] += mrec.get("units_s_r")
+			else:
+				process_wise_data_dics[start_process_karigar_key] = mrec.get("units_s_r")
 
 
-	return process_wise_data_dics
+		if  mrec.get("manufacturing_record_type") == "Receive Material from Manufacturing":
+			if process_wise_data_dics.get(end_process_inbound_key) :
+				process_wise_data_dics[end_process_inbound_key] += mrec.get("units_s_r")
+			else:
+				process_wise_data_dics[end_process_inbound_key] = mrec.get("units_s_r")
+
+			if mrec.get("start_process") != mrec.get("end_process"):
+				in_between_s_and_e_process_data = get_in_between_s_and_e_process_data(start_process_karigar_key,
+																					  end_process_inbound_key,
+																					  item_process_column_key_list,
+																					  mrec.get("units_s_r"))
+
+				for column_key,key_val in in_between_s_and_e_process_data.items():
+					if process_wise_data_dics.get(column_key):
+						process_wise_data_dics[column_key] += key_val
+					else:
+						process_wise_data_dics[column_key] = key_val
+
+		if mrec.get("manufacturing_record_type") == "Send Materials to Internal Storage WH":
+			if process_wise_data_dics.get(end_process_outbound_key) :
+				process_wise_data_dics[end_process_outbound_key] += mrec.get("units_s_r")
+			else:
+				process_wise_data_dics[end_process_outbound_key] = mrec.get("units_s_r")
+
+		parent_row_dic.update(process_wise_data_dics)
+		# new code end
+
+	return  parent_row_dic
+
+
+
+
 
 
 def get_item_group_row_pass_through_data(item_group) :
