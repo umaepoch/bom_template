@@ -83,8 +83,13 @@ from`tabPch Manufacturing Method Details` mmd,`tabPch Manufacturing Method Detai
 #for packing
 
 @frappe.whitelist()
-def get_packing_raw_materials(item_made_json):
-    item_made_json = json.loads(item_made_json)
+def get_packing_raw_materials(multiple_method_items):
+    multiple_method_items = json.loads(multiple_method_items)
+    item_made_json ={}
+
+    for multiple_method_item in multiple_method_items:
+        item_made_json[multiple_method_item.get("item_made")] = multiple_method_item.get("units_s_r")
+
     print("item_made_json", item_made_json)
 
     item_made_list_str = ','.join("'{0}'".format(item_made) for item_made, ob_data in item_made_json.items())

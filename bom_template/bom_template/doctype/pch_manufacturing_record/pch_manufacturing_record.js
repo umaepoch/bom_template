@@ -546,17 +546,9 @@ frappe.ui.form.on("Pch Manufacturing Record", "get_required_items", function(frm
 
 	console.log("yes same name"+ cur_frm.doc.manufacturing_record_type )
 
-        var method_items  = cur_frm.doc.multiple_method_items
-        console.log("method_items"+ JSON.stringify(method_items));
-
-
-        var item_made_json = {}
-        for (var i = 0; i < method_items.length; i++) {
-        item_made_json[method_items[i].item_made] =  method_items[i].units_s_r
-        }
-        console.log("item_made_json"+ JSON.stringify(item_made_json));
-
-        set_start_end_process_raw_materials_for_packing(item_made_json)
+        var multiple_method_items  = cur_frm.doc.multiple_method_items
+        console.log("method_items"+ JSON.stringify(multiple_method_items));
+        set_start_end_process_raw_materials_for_packing(multiple_method_items)
 
 	}else{  //for other record types
     console.log("from else"+ cur_frm.doc.manufacturing_record_type )
@@ -760,16 +752,20 @@ function set_process_details(start_process,end_process,method,units_s_r){
     });
 }
 
-function 	set_start_end_process_raw_materials_for_packing(item_made_json){
+function 	set_start_end_process_raw_materials_for_packing(multiple_method_items){
 
 frappe.call({
 		method: 'bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.get_packing_raw_materials',
 		args: {
-		   "item_made_json": item_made_json
+		   "multiple_method_items": multiple_method_items
 		},
 		async: false,
 		callback: function(r) {
 			 if (r.message) {
+			    var item_made_json = {}
+                for (var i = 0; i < multiple_method_items.length; i++) {
+                item_made_json[multiple_method_items[i].item_made] =  multiple_method_items[i].units_s_r
+                }
 				console.log("raw material json..." + JSON.stringify(r.message));
 				cur_frm.clear_table("req_items");
 				var items_list = r.message;
