@@ -535,10 +535,12 @@ frappe.ui.form.on("Pch Manufacturing Record", "manufacturing_method", function(f
 
 frappe.ui.form.on("Pch Manufacturing Record", "get_required_items", function(frm, cdt, cdn) {
 
-    console.log("new packing trigger working")
+    console.log("new packing trigger working"+ cur_frm.doc.manufacturing_record_type )
 
 
 	if(cur_frm.doc.manufacturing_record_type == "Send Material for Packing"){
+
+	console.log("yes same name"+ cur_frm.doc.manufacturing_record_type )
 
         var method_items  = cur_frm.doc.multiple_method_items
         console.log("method_items"+ JSON.stringify(method_items));
@@ -553,6 +555,8 @@ frappe.ui.form.on("Pch Manufacturing Record", "get_required_items", function(frm
         set_start_end_process_raw_materials_for_packing(item_made_json)
 
 	}else{  //for other record types
+    console.log("from else"+ cur_frm.doc.manufacturing_record_type )
+
 		set_start_end_process_raw_materials(start_process,end_process,method,units_s_r)
 	}
 
