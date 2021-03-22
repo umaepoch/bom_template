@@ -85,7 +85,10 @@ from`tabPch Manufacturing Method Details` mmd,`tabPch Manufacturing Method Detai
 @frappe.whitelist()
 def get_packing_raw_materials(item_made_json):
     item_made_json = json.loads(item_made_json)
+    print("item_made_json", item_made_json)
+
     item_made_list_str = ','.join("'{0}'".format(item_made) for item_made, ob_data in item_made_json.items())
+    print("item_made_list_str", item_made_list_str)
 
     query = "select mmd.name,mmd.item_code as item_made,mmdi.item_code,mmdi.item_name,mmdi.qty_uom,mmdi.qty_per_unit_made,mmdi.consumption_type,mmdi.stock_uom,mmdi.conversion_factor,mmdi.operand,mmdi.qty_in_stock_uom from`tabPch Manufacturing Method Details` mmd,`tabPch Manufacturing Method Details RM Child` mmdi where mmd.name=mmdi.parent and  mmd.pch_process='Packing'  and mmd.item_code in ( {} )".format(
         item_made_list_str)
