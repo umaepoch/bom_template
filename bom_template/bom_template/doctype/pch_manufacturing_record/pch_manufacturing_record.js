@@ -40,8 +40,6 @@ frappe.ui.form.on('Pch Manufacturing Record', {
 	}//end of field trigger
 });
 
-
-
 frappe.ui.form.on("Pch Manufacturing Record", "on_submit", function(frm, cdt, cdn) {
 	console.log("on_submit working")
 	var m_record_type = cur_frm.doc.manufacturing_record_type ;
@@ -249,251 +247,6 @@ frappe.ui.form.on("Pch Manufacturing Record","after_cancel",function(frm,cdt,cdn
 	}
 
 });
-function cancel_stock_entries(mat_issue,mat_receipt,mat_transfer){
-	var resp;
-	frappe.call({
-		method:"bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.cancel_s_entries",
-		args:{
-
-			"mat_issue":mat_issue,
-			"mat_receipt":mat_receipt,
-			"mat_transfer":mat_transfer
-
-		},
-		async:false,
-		callback:function(r){
-
-
-			 resp=r.message;
-		}
-	})
-	return resp;
-}
-function cancel_se_for_rm(mat_transfer){
-
-	var resp;
-	frappe.call({
-		method:"bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.cancel_single_se",
-		args:{
-
-			"mat_transfer":mat_transfer
-
-
-		},
-		async:false,
-		callback:function(r){
-
-
-			 resp=r.message;
-		}
-	})
-	return resp;
-}
-
-
-function receive_material_for_manufacturing(doc_object){
-	var req_items = doc_object.req_items
-	var method_items = doc_object.method_items
-	var outbound_warehouse =  doc_object.outbound_warehouse
-	var target_warehouse =  doc_object.target_warehouse //subContractor wh
-	var location =  doc_object.location //subContractor wh
-	var start_process =  doc_object.start_process
-	var receiving_warehouse =  doc_object.receiving_warehouse
-	var subcontracting_rate =  doc_object.subcontracting_rate
-	var units_s_r =  doc_object.units_s_r
-	var resp;
-
-
-	var entity ={
-		"req_items":req_items,
-		"method_items":method_items,
-		"outbound_warehouse":outbound_warehouse,
-		"target_warehouse":target_warehouse,
-		"receiving_warehouse":receiving_warehouse,
-		"start_process":start_process,
-		"location":location,
-		"subcontracting_rate":subcontracting_rate,
-		"units_s_r":units_s_r
-	}
-	console.log("entity" + JSON.stringify(entity));
-
-
-	frappe.call({
-			method: "bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.receive_material_for_manufacturing",
-			args: {
-		 "entity":entity
-			},
-			async: false,
-			callback: function(r) {
-					if (r.message) {
-					resp=r.message;
-							console.log("method_doc_data receive_material_for_manufacturing" + JSON.stringify(r.message));
-							}
-			} //end of callback fun..
-	}) //end of frappe call..
-	return resp;
-} //end of receive_material_for_manufacturing
-
-function send_material_for_manufacturing(doc_object){
-	var req_items = doc_object.req_items
-	var method_items = doc_object.method_items
-	var outbound_warehouse =  doc_object.outbound_warehouse
-	var target_warehouse =  doc_object.target_warehouse //subContractor wh
-	var location =  doc_object.location //subContractor wh
-	var start_process =  doc_object.start_process
-	var subcontracting_rate =  doc_object.subcontracting_rate
-	var units_to_be_sr=doc_object.units_s_r
-	var resp;
-	var entity ={
-		"req_items":req_items,
-		"method_items":method_items,
-		"outbound_warehouse":outbound_warehouse,
-		"target_warehouse":target_warehouse,
-		"start_process":start_process,
-		"location":location,
-		"subcontracting_rate":subcontracting_rate,
-		"units_to_be_sr":units_to_be_sr
-	}
-
-	frappe.call({
-			method: "bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.send_material_for_manufacturing",
-			args: {
-		    "entity":entity
-			},
-			async: false,
-			callback: function(r) {
-					if (r.message) {
-					resp=r.message;
-							console.log("method_doc_data" + JSON.stringify(r.message));
-							}
-			} //end of callback fun..
-	}) //end of frappe call..
-	return resp;
-}
-
-function send_material_for_packing (item_made_json,doc_object){
-
-    var req_items = doc_object.req_items
-	var method_items = doc_object.method_items
-	var multiple_method_items = doc_object.multiple_method_items
-	var outbound_warehouse =  doc_object.outbound_warehouse
-	var target_warehouse =  doc_object.target_warehouse //subContractor wh
-	var location =  doc_object.location //subContractor wh
-	var start_process =  doc_object.start_process
-	var subcontracting_rate =  doc_object.subcontracting_rate
-	var units_to_be_sr = doc_object.units_s_r
-
-	var entity ={
-		"req_items":req_items,
-		"method_items":method_items,
-		"multiple_method_items":multiple_method_items,
-		"outbound_warehouse":outbound_warehouse,
-		"target_warehouse":target_warehouse,
-		"start_process":start_process,
-		"location":location,
-		"subcontracting_rate":subcontracting_rate,
-		"units_to_be_sr":units_to_be_sr,
-		"item_made_json":item_made_json
-	}
-
-	frappe.call({
-			method: "bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.send_material_for_packing",
-			args: {
-		   "entity":entity
-			},
-			async: false,
-			callback: function(r) {
-					if (r.message) {
-					resp=r.message;
-							console.log("method_doc_data" + JSON.stringify(r.message));
-							}
-			} //end of callback fun..
-	}) //end of frappe call..
-	return resp;
-}
-
-function receive_material_from_packing (item_made_json,doc_object){
-
-	var multiple_method_items = doc_object.multiple_method_items
-	var outbound_warehouse =  doc_object.outbound_warehouse
-	var target_warehouse =  doc_object.target_warehouse //subContractor wh
-	var location =  doc_object.location //subContractor wh
-	var start_process =  doc_object.start_process
-	var subcontracting_rate =  doc_object.subcontracting_rate
-	var units_to_be_sr = doc_object.units_s_r
-	var receiving_warehouse =  doc_object.receiving_warehouse
-
-
-	var entity ={
-		"multiple_method_items":multiple_method_items,
-		"outbound_warehouse":outbound_warehouse,
-		"target_warehouse":target_warehouse,
-		"receiving_warehouse":receiving_warehouse,
-		"start_process":start_process,
-		"location":location,
-		"subcontracting_rate":subcontracting_rate,
-		"units_to_be_sr":units_to_be_sr,
-		"item_made_json":item_made_json
-	}
-
-	frappe.call({
-			method: "bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.receive_material_from_packing",
-			args: {
-		   "entity":entity
-			},
-			async: false,
-			callback: function(r) {
-					if (r.message) {
-					resp=r.message;
-							console.log("method_doc_data" + JSON.stringify(r.message));
-							}
-			} //end of callback fun..
-	}) //end of frappe call..
-	return resp;
-}
-
-
-
-
-function transfer_material_internally(doc_object){
-	//var req_items = doc_object.req_items
-	var method_items = doc_object.method_items
-	var outbound_warehouse =  doc_object.outbound_warehouse
-	//var target_warehouse =  doc_object.target_warehouse //subContractor wh
-	var location =  doc_object.location //subContractor wh
-	var start_process =  doc_object.start_process
-	var receiving_warehouse =  doc_object.receiving_warehouse
-	//var subcontracting_rate =  doc_object.subcontracting_rate
-	var units_s_r =  doc_object.units_s_r
-	var resp;
-	var entity ={
-
-		"method_items":method_items,
-		"outbound_warehouse":outbound_warehouse,
-		"receiving_warehouse":receiving_warehouse,
-		"start_process":start_process,
-		"units_s_r":units_s_r,
-		"location":location
-
-	}
-	console.log("entity" + JSON.stringify(entity));
-
-
-	frappe.call({
-			method: "bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.move_material_internally",
-			args: {
-		 "entity":entity
-			},
-			async: false,
-			callback: function(r) {
-					if (r.message) {
-							resp=r.message
-							console.log("method_doc_data receive_material_for_manufacturing" + JSON.stringify(r.message));
-							}
-			} //end of callback fun..
-	}) //end of frappe call..
-	return resp
-} //end of receive_material_for_manufacturing
 
 
 frappe.ui.form.on("Pch Manufacturing Record", "manufacturing_method", function(frm, cdt, cdn) {
@@ -567,8 +320,10 @@ qty_of_raw_material_being_sent:function(frm, cdt, cdn) {
 	var cf=d.conversion_factor;
 	var qty_to_be_sent=d.qty_of_raw_material_being_sent
 	var total_qty=qty_to_be_sent*cf
-	console.log(total_qty)
+	console.log("qty_of_raw_material_being_sent trgger"+total_qty)
 	d.dispatched_quantity_in_uom=total_qty
+	refresh_field("dispatched_quantity_in_uom");
+	refresh_field(frm.doc.req_items);
 	}
 
 });
@@ -950,6 +705,254 @@ callback:function(r){
 	return resp;
 
 }
+
+
+function cancel_stock_entries(mat_issue,mat_receipt,mat_transfer){
+	var resp;
+	frappe.call({
+		method:"bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.cancel_s_entries",
+		args:{
+
+			"mat_issue":mat_issue,
+			"mat_receipt":mat_receipt,
+			"mat_transfer":mat_transfer
+
+		},
+		async:false,
+		callback:function(r){
+
+
+			 resp=r.message;
+		}
+	})
+	return resp;
+}
+function cancel_se_for_rm(mat_transfer){
+
+	var resp;
+	frappe.call({
+		method:"bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.cancel_single_se",
+		args:{
+
+			"mat_transfer":mat_transfer
+
+
+		},
+		async:false,
+		callback:function(r){
+
+
+			 resp=r.message;
+		}
+	})
+	return resp;
+}
+
+
+function receive_material_for_manufacturing(doc_object){
+	var req_items = doc_object.req_items
+	var method_items = doc_object.method_items
+	var outbound_warehouse =  doc_object.outbound_warehouse
+	var target_warehouse =  doc_object.target_warehouse //subContractor wh
+	var location =  doc_object.location //subContractor wh
+	var start_process =  doc_object.start_process
+	var receiving_warehouse =  doc_object.receiving_warehouse
+	var subcontracting_rate =  doc_object.subcontracting_rate
+	var units_s_r =  doc_object.units_s_r
+	var resp;
+
+
+	var entity ={
+		"req_items":req_items,
+		"method_items":method_items,
+		"outbound_warehouse":outbound_warehouse,
+		"target_warehouse":target_warehouse,
+		"receiving_warehouse":receiving_warehouse,
+		"start_process":start_process,
+		"location":location,
+		"subcontracting_rate":subcontracting_rate,
+		"units_s_r":units_s_r
+	}
+	console.log("entity" + JSON.stringify(entity));
+
+
+	frappe.call({
+			method: "bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.receive_material_for_manufacturing",
+			args: {
+		 "entity":entity
+			},
+			async: false,
+			callback: function(r) {
+					if (r.message) {
+					resp=r.message;
+							console.log("method_doc_data receive_material_for_manufacturing" + JSON.stringify(r.message));
+							}
+			} //end of callback fun..
+	}) //end of frappe call..
+	return resp;
+} //end of receive_material_for_manufacturing
+
+function send_material_for_manufacturing(doc_object){
+	var req_items = doc_object.req_items
+	var method_items = doc_object.method_items
+	var outbound_warehouse =  doc_object.outbound_warehouse
+	var target_warehouse =  doc_object.target_warehouse //subContractor wh
+	var location =  doc_object.location //subContractor wh
+	var start_process =  doc_object.start_process
+	var subcontracting_rate =  doc_object.subcontracting_rate
+	var units_to_be_sr=doc_object.units_s_r
+	var resp;
+	var entity ={
+		"req_items":req_items,
+		"method_items":method_items,
+		"outbound_warehouse":outbound_warehouse,
+		"target_warehouse":target_warehouse,
+		"start_process":start_process,
+		"location":location,
+		"subcontracting_rate":subcontracting_rate,
+		"units_to_be_sr":units_to_be_sr
+	}
+
+	frappe.call({
+			method: "bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.send_material_for_manufacturing",
+			args: {
+		    "entity":entity
+			},
+			async: false,
+			callback: function(r) {
+					if (r.message) {
+					resp=r.message;
+							console.log("method_doc_data" + JSON.stringify(r.message));
+							}
+			} //end of callback fun..
+	}) //end of frappe call..
+	return resp;
+}
+
+function send_material_for_packing (item_made_json,doc_object){
+
+    var req_items = doc_object.req_items
+	var method_items = doc_object.method_items
+	var multiple_method_items = doc_object.multiple_method_items
+	var outbound_warehouse =  doc_object.outbound_warehouse
+	var target_warehouse =  doc_object.target_warehouse //subContractor wh
+	var location =  doc_object.location //subContractor wh
+	var start_process =  doc_object.start_process
+	var subcontracting_rate =  doc_object.subcontracting_rate
+	var units_to_be_sr = doc_object.units_s_r
+
+	var entity ={
+		"req_items":req_items,
+		"method_items":method_items,
+		"multiple_method_items":multiple_method_items,
+		"outbound_warehouse":outbound_warehouse,
+		"target_warehouse":target_warehouse,
+		"start_process":start_process,
+		"location":location,
+		"subcontracting_rate":subcontracting_rate,
+		"units_to_be_sr":units_to_be_sr,
+		"item_made_json":item_made_json
+	}
+
+	frappe.call({
+			method: "bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.send_material_for_packing",
+			args: {
+		   "entity":entity
+			},
+			async: false,
+			callback: function(r) {
+					if (r.message) {
+					resp=r.message;
+							console.log("method_doc_data" + JSON.stringify(r.message));
+							}
+			} //end of callback fun..
+	}) //end of frappe call..
+	return resp;
+}
+
+function receive_material_from_packing (item_made_json,doc_object){
+
+	var multiple_method_items = doc_object.multiple_method_items
+	var outbound_warehouse =  doc_object.outbound_warehouse
+	var target_warehouse =  doc_object.target_warehouse //subContractor wh
+	var location =  doc_object.location //subContractor wh
+	var start_process =  doc_object.start_process
+	var subcontracting_rate =  doc_object.subcontracting_rate
+	var units_to_be_sr = doc_object.units_s_r
+	var receiving_warehouse =  doc_object.receiving_warehouse
+
+
+	var entity ={
+		"multiple_method_items":multiple_method_items,
+		"outbound_warehouse":outbound_warehouse,
+		"target_warehouse":target_warehouse,
+		"receiving_warehouse":receiving_warehouse,
+		"start_process":start_process,
+		"location":location,
+		"subcontracting_rate":subcontracting_rate,
+		"units_to_be_sr":units_to_be_sr,
+		"item_made_json":item_made_json
+	}
+
+	frappe.call({
+			method: "bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.receive_material_from_packing",
+			args: {
+		   "entity":entity
+			},
+			async: false,
+			callback: function(r) {
+					if (r.message) {
+					resp=r.message;
+							console.log("method_doc_data" + JSON.stringify(r.message));
+							}
+			} //end of callback fun..
+	}) //end of frappe call..
+	return resp;
+}
+
+
+
+
+function transfer_material_internally(doc_object){
+	//var req_items = doc_object.req_items
+	var method_items = doc_object.method_items
+	var outbound_warehouse =  doc_object.outbound_warehouse
+	//var target_warehouse =  doc_object.target_warehouse //subContractor wh
+	var location =  doc_object.location //subContractor wh
+	var start_process =  doc_object.start_process
+	var receiving_warehouse =  doc_object.receiving_warehouse
+	//var subcontracting_rate =  doc_object.subcontracting_rate
+	var units_s_r =  doc_object.units_s_r
+	var resp;
+	var entity ={
+
+		"method_items":method_items,
+		"outbound_warehouse":outbound_warehouse,
+		"receiving_warehouse":receiving_warehouse,
+		"start_process":start_process,
+		"units_s_r":units_s_r,
+		"location":location
+
+	}
+	console.log("entity" + JSON.stringify(entity));
+
+
+	frappe.call({
+			method: "bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.move_material_internally",
+			args: {
+		 "entity":entity
+			},
+			async: false,
+			callback: function(r) {
+					if (r.message) {
+							resp=r.message
+							console.log("method_doc_data receive_material_for_manufacturing" + JSON.stringify(r.message));
+							}
+			} //end of callback fun..
+	}) //end of frappe call..
+	return resp
+} //end of receive_material_for_manufacturing
+
 
 //
 //get_required_items button -Manufacturing Method,start_process,end_process,units_s_r validation neede
