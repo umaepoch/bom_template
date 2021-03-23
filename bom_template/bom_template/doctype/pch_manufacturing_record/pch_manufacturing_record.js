@@ -537,6 +537,8 @@ frappe.ui.form.on("Pch Manufacturing Record", "get_required_items", function(frm
     var record_type =   cur_frm.doc.manufacturing_record_type
     var start_process = cur_frm.doc.start_process
     var end_process = cur_frm.doc.end_process
+    var method = cur_frm.doc.manufacturing_method;
+	var units_s_r = cur_frm.doc.units_s_r;
 
 
     console.log("get_required_items clicked"+ cur_frm.doc.manufacturing_record_type )
