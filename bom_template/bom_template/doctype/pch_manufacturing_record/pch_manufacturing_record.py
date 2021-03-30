@@ -427,6 +427,7 @@ def receive_material_from_packing(entity):
     response = [];
     # make_transfer
     # from method_item table  Subcontractor Warehouse== sourch wh and Receiving Warehouse==
+    raw_trans_id_list = []
 
     for i_row in entity.get("multiple_method_items"):
         transfer_items_list = []
@@ -448,9 +449,12 @@ def receive_material_from_packing(entity):
         se_transfer = create_stock_entry(se_trans_entity)
         # print(se_transfer,"-----------------------------------------------");
         if (se_transfer[0]["Exception"] == "Not Occured"):
+            raw_trans_id_list.append(se_transfer[0]["Name"])
             response.append(  {"Name": se_transfer[0]["Name"], "Status": "Created", "Stock Entry Type": "Material Transfer"});
         else: #need to cancel previous transactions if any one failed to create
+            cancel_raw_transactions(raw_trans_id_list)
             response.append({"Name": se_transfer[0]["Name"], "Status": "Not Created", "Stock Entry Type": "Material Transfer"});
+            break
 
 
     # response.append({"Name":se_transfer,"Status":"Not Created"});

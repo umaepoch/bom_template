@@ -213,7 +213,26 @@ frappe.ui.form.on("Pch Manufacturing Record", "on_submit", function(frm, cdt, cd
     for (var i = 0; i < method_items.length; i++) {
     item_made_json[method_items[i].item_made] =  method_items[i].units_s_r
     }
-	receive_material_from_packing(item_made_json,cur_frm.doc)
+	var r = receive_material_from_packing(item_made_json,cur_frm.doc)
+	console.log("receive material from packing  rm response"+JSON.stringify(r))
+
+	 for(var i=0;i<r.length;i++){
+        if(r[i]["Status"]=="Created"){
+                frappe.msgprint("Stock Entry for"+" "+r[i]["Stock Entry Type"]+" "+"has been made"+" "+"ID of the corresponding Stock Entry is"+" "+r[i]["Name"])
+        }//end of created
+        /*
+        if(r[i]["Status"]=="Not Created"){
+        frappe.msgprint("Did not Submit");
+        cur_frm.save('Cancel');
+        if(cur_frm.doc.docstatus==1)
+        {
+            change_docstatus(cur_frm.doc.name);
+        }
+
+        } //end of not created
+        */
+
+    }
 	} //end of packing
 
 });
@@ -959,6 +978,7 @@ function receive_material_from_packing (item_made_json,doc_object){
 	var subcontracting_rate =  doc_object.subcontracting_rate
 	var units_to_be_sr = doc_object.units_s_r
 	var receiving_warehouse =  doc_object.receiving_warehouse
+	var resp;
 
 
 	var entity ={
