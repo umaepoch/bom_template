@@ -404,7 +404,7 @@ def send_material_for_packing(entity):
     return response
 
 def cancel_raw_transactions(raw_trans_id_list) :
-    print "custom cancel worked",raw_trans_id_list
+    #print "custom cancel worked",raw_trans_id_list
     for raw_trans in raw_trans_id_list :
         doc = frappe.get_doc('Stock Entry', {'name': raw_trans})
         if (doc):
