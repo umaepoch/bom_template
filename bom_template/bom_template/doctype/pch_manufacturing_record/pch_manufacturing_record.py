@@ -83,8 +83,10 @@ from`tabPch Manufacturing Method Details` mmd,`tabPch Manufacturing Method Detai
 #for packing
 
 @frappe.whitelist()
-def get_packing_raw_materials(multiple_method_items):
+def get_packing_raw_materials(multiple_method_items,start_process,end_process):
     multiple_method_items = json.loads(multiple_method_items)
+    start_process_pro_ord_no = frappe.db.get_value("Pch Manufacturing Method Details", {"name": start_process},"process_order")
+    end_process_pro_ord_no = frappe.db.get_value("Pch Manufacturing Method Details", {"name": end_process},"process_order")
     item_made_json ={}
 
     for multiple_method_item in multiple_method_items:
@@ -95,10 +97,11 @@ def get_packing_raw_materials(multiple_method_items):
     item_made_list_str = ','.join("'{0}'".format(item_made) for item_made, ob_data in item_made_json.items())
     print("item_made_list_str", item_made_list_str)
 
-    query = "select mmd.name,mmd.item_code as item_made,mmdi.item_code,mmdi.item_name,mmdi.qty_uom,mmdi.qty_per_unit_made,mmdi.consumption_type,mmdi.stock_uom,mmdi.conversion_factor,mmdi.operand,mmdi.qty_in_stock_uom from`tabPch Manufacturing Method Details` mmd,`tabPch Manufacturing Method Details RM Child` mmdi where mmd.name=mmdi.parent and  mmd.pch_process='Packing'  and mmd.item_code in ( {} )".format(
-        item_made_list_str)
+    query = "select mmd.name,mmd.item_code as item_made,mmdi.item_code,mmdi.item_name,mmdi.qty_uom,mmdi.qty_per_unit_made,mmdi.consumption_type,mmdi.stock_uom,mmdi.conversion_factor,mmdi.operand,mmdi.qty_in_stock_uom from`tabPch Manufacturing Method Details` mmd,`tabPch Manufacturing Method Details RM Child` mmdi where mmd.name=mmdi.parent   and mmd.process_order>={0} and mmd.process_order<= {1}  and mmd.item_code in ( {2} )".format(start_process_pro_ord_no,end_process_pro_ord_no,item_made_list_str)
     print ("query",query)
     packing_raw_materials = frappe.db.sql(query, as_dict=1)
+
+
     return packing_raw_materials
 
 
@@ -333,6 +336,12 @@ def send_material_for_packing(entity):
     raw_material_warehouse = frappe.db.get_value("Pch Locations", {"name": entity.get("location")},"raw_material_warehouse")
 
     #new code start
+    #on transfer and one issue for each item made .if one fails cancel all previous ones
+
+    #store all trnsactions in a list and cancell in one go
+
+    raw_trans_id_list =[]
+
     for im_row in entity.get("multiple_method_items"):
         issue_items_list = []
         #print "came inside item made ",im_row.get("item_made")
@@ -357,6 +366,9 @@ def send_material_for_packing(entity):
 
         transfer_items_list = []
         if se_issue[0]["Exception"] == "Not Occured":
+            raw_trans_id_list.append( se_issue[0]["Name"])
+            response.append({"Name": se_issue[0]["Name"], "Status": "Created", "Stock Entry Type": "Material Issue"});
+
             #create transfer for each item made
             trans_item_dic = {
                 "item_code": im_row.get("item_made"),
@@ -376,20 +388,30 @@ def send_material_for_packing(entity):
             se_transfer2 = create_stock_entry(se_trans_entity)
 
             if se_transfer2[0]["Exception"] == "Not Occured":
+                raw_trans_id_list.append(se_transfer2[0]["Name"])
                 response.append({"Name": se_transfer2[0]["Name"], "Status": "Created", "Stock Entry Type": "Material Transfer"});
             else:
+                cancel_raw_transactions(raw_trans_id_list)
                 response.append({"Name": se_transfer2[0]["Name"], "Status": "Not Created","Stock Entry Type": "Material Transfer"});
-                doc1 = frappe.get_doc("Stock Entry", se_issue[0]["Name"]);  # here we are cancelling issue only  but we need to canncel all material transfers as well
-                doc1.docstatus = 2
-                doc1.save()
+                break
 
         else:
+            cancel_raw_transactions(raw_trans_id_list)
             response.append({"Name": se_issue[0]["Name"], "Status": "Not Created", "Stock Entry Type": "Material Issue"});
+            break
 
     #new code end
-
-
     return response
+
+def cancel_raw_transactions(raw_trans_id_list) :
+    print "custom cancel worked",raw_trans_id_list
+    for raw_trans in raw_trans_id_list :
+        doc = frappe.get_doc('Stock Entry', {'name': raw_trans})
+        if (doc):
+            doc.docstatus = 2
+            doc.save()
+        else:
+            frappe.throw("No such un-cancelled document")
 
 @frappe.whitelist()
 def receive_material_from_packing(entity):

@@ -174,12 +174,35 @@ frappe.ui.form.on("Pch Manufacturing Record", "on_submit", function(frm, cdt, cd
 	}
 
 	if(m_record_type == "Send Material for Packing"){ //haven't handled exception like previous types yet
+	console.log("send material for packing  submitted")
 	var method_items  = cur_frm.doc.multiple_method_items
 	var item_made_json = {}
     for (var i = 0; i < method_items.length; i++) {
     item_made_json[method_items[i].item_made] =  method_items[i].units_s_r
     }
-	send_material_for_packing(item_made_json,cur_frm.doc)
+
+    var r = send_material_for_packing(item_made_json,cur_frm.doc)
+    console.log("send material for packing  rm response"+JSON.stringify(r))
+
+    for(var i=0;i<r.length;i++){
+        if(r[i]["Status"]=="Created"){
+                frappe.msgprint("Stock Entry for"+" "+r[i]["Stock Entry Type"]+" "+"has been made"+" "+"ID of the corresponding Stock Entry is"+" "+r[i]["Name"])
+        }//end of created
+/*
+        if(r[i]["Status"]=="Not Created"){
+        frappe.msgprint("Did not Submit");
+        cur_frm.save('Cancel');
+        if(cur_frm.doc.docstatus==1)
+        {
+            change_docstatus(cur_frm.doc.name);
+        }
+
+        } //end of not created
+        */
+
+    }
+
+
 
 	} //end of packing
 
@@ -303,7 +326,7 @@ frappe.ui.form.on("Pch Manufacturing Record", "get_required_items", function(frm
 
         var multiple_method_items  = cur_frm.doc.multiple_method_items
         console.log("method_items"+ JSON.stringify(multiple_method_items));
-        set_start_end_process_raw_materials_for_packing(multiple_method_items)
+        set_start_end_process_raw_materials_for_packing(multiple_method_items,start_process,end_process)
 
 	}else{  //for other record types
     console.log("from else"+ cur_frm.doc.manufacturing_record_type )
@@ -509,12 +532,14 @@ function set_process_details(start_process,end_process,method,units_s_r){
     });
 }
 
-function 	set_start_end_process_raw_materials_for_packing(multiple_method_items){
+function  set_start_end_process_raw_materials_for_packing(multiple_method_items,start_process,end_process){
 
 frappe.call({
 		method: 'bom_template.bom_template.doctype.pch_manufacturing_record.pch_manufacturing_record.get_packing_raw_materials',
 		args: {
-		   "multiple_method_items": multiple_method_items
+		   "multiple_method_items": multiple_method_items,
+		   "start_process":start_process,
+		   "end_process":end_process
 		},
 		async: false,
 		callback: function(r) {
@@ -526,6 +551,8 @@ frappe.call({
 				console.log("raw material json..." + JSON.stringify(r.message));
 				cur_frm.clear_table("req_items");
 				var items_list = r.message;
+				var combined_rm_list = []
+				var  combined_rm_item_dic ={}
 				for (var i=0;i<items_list.length;i++){
 				var total_qty = item_made_json[items_list[i]['item_made']] *  items_list[i]['qty_per_unit_made'] //item made
 				var child = cur_frm.add_child("req_items");
@@ -543,12 +570,63 @@ frappe.call({
 				frappe.model.set_value(child.doctype, child.name, "mmd", items_list[i]['name']);
 				//frappe.model.set_value(child.doctype, child.name, "dispatched_quantity_in_uom", items_list[i]['dispatched_quantity_in_uom']);
 				frappe.model.set_value(child.doctype, child.name, "operand", items_list[i]['operand']);
-				}//end of for loop...
 				refresh_field("req_items");
+
+				//combine item data
+				var combined_rm_json = {
+				"item_code":items_list[i]['item_code'],
+				"qty_uom":items_list[i]['qty_uom'],
+				"qty_per_unit_made":items_list[i]['qty_per_unit_made'],
+				"total_qty":total_qty,
+				"stock_uom":items_list[i]['stock_uom'],
+				"conversion_factor":items_list[i]['conversion_factor'],
+				"operand":items_list[i]['operand']
+				}
+				combined_rm_list.push(combined_rm_json)
+
+				if(combined_rm_item_dic[items_list[i]['item_code']]){
+				combined_rm_item_dic[items_list[i]['item_code']] = combined_rm_item_dic[items_list[i]['item_code']]  + total_qty
+				}else{
+                combined_rm_item_dic[items_list[i]['item_code']] = total_qty
+				}
+				}//end of for loop...
+
+				console.log("sur before call");
+
+				set_combined_rm_table(combined_rm_list,combined_rm_item_dic)
 				}
 			//console.log("supplier_criticality---11111----" + supplier_criticality);
 		}
     });
+}
+
+function set_combined_rm_table(combined_rm_list,combined_rm_item_dic){
+console.log("from set_combined_rm_table");
+var items_list = combined_rm_list
+var dup_item_list = []
+cur_frm.clear_table("required_items_combined");
+for (var i=0;i<items_list.length;i++){
+if(!dup_item_list.includes(items_list[i]['item_code'])){
+dup_item_list.push(items_list[i]['item_code'])
+var child = cur_frm.add_child("required_items_combined");
+console.log("sur items_list :"+i+" row"+JSON.stringify(items_list[i]))
+frappe.model.set_value(child.doctype, child.name, "item_code", items_list[i]['item_code']);
+frappe.model.set_value(child.doctype, child.name, "qty_uom", items_list[i]['qty_uom']);
+frappe.model.set_value(child.doctype, child.name, "qty_uom", items_list[i]['qty_uom']);
+frappe.model.set_value(child.doctype, child.name, "qty_per_unit_made", items_list[i]['qty_per_unit_made']);
+frappe.model.set_value(child.doctype, child.name, "qty_in_stock_uom", items_list[i]['qty_in_stock_uom']);
+frappe.model.set_value(child.doctype, child.name, "total_qty",combined_rm_item_dic[items_list[i]['item_code']]);
+//frappe.model.set_value(child.doctype, child.name, "qty_of_raw_material_being_sent", items_list[i]['qty_of_raw_material_being_sent']);
+frappe.model.set_value(child.doctype, child.name, "consumption_type", items_list[i]['consumption_type']);
+frappe.model.set_value(child.doctype, child.name, "stock_uom", items_list[i]['stock_uom']);
+frappe.model.set_value(child.doctype, child.name, "conversion_factor", items_list[i]['conversion_factor']);
+//frappe.model.set_value(child.doctype, child.name, "dispatched_quantity_in_uom", items_list[i]['dispatched_quantity_in_uom']);
+frappe.model.set_value(child.doctype, child.name, "operand", items_list[i]['operand']);
+}
+
+}
+refresh_field("required_items_combined");
+
 }
 
 function set_start_end_process_raw_materials(start_process,end_process,method,units_s_r){
@@ -840,6 +918,7 @@ function send_material_for_packing (item_made_json,doc_object){
 	var start_process =  doc_object.start_process
 	var subcontracting_rate =  doc_object.subcontracting_rate
 	var units_to_be_sr = doc_object.units_s_r
+	var resp;
 
 	var entity ={
 		"req_items":req_items,
