@@ -133,10 +133,10 @@ def send_material_to_factory(entity):
 
 
     if (se_transfer[0]["Exception"] == "Not Occured"):
-        response.append({"Name": se_transfer["Name"], "Status": "Created", "Stock Entry Type": "Material Issue"});
+        response.append({"Name": se_transfer[0]["Name"], "Status": "Created", "Stock Entry Type": "Material Issue"});
         return response
     else:
-        response.append({"Name": se_transfer["Name"], "Status": "Not Created", "Stock Entry Type": "Material Issue"});
+        response.append({"Name": se_transfer[0]["Name"], "Status": "Not Created", "Stock Entry Type": "Material Issue"});
         return response
 
 
@@ -173,10 +173,10 @@ def receive_material_at_factory(entity):
 
 
     if (se_transfer[0]["Exception"] == "Not Occured"):
-        response.append({"Name": se_transfer["Name"], "Status": "Created", "Stock Entry Type": "Material Receipt"});
+        response.append({"Name": se_transfer[0]["Name"], "Status": "Created", "Stock Entry Type": "Material Receipt"});
         return response
     else:
-        response.append({"Name": se_transfer["Name"], "Status": "Not Created", "Stock Entry Type": "Material Receipt"});
+        response.append({"Name": se_transfer[0]["Name"], "Status": "Not Created", "Stock Entry Type": "Material Receipt"});
         return response
 
 def get_source_warehouse_val_rate(corporate_warehouse,item_code):
