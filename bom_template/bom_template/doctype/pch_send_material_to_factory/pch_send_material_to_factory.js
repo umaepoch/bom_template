@@ -6,6 +6,65 @@ frappe.ui.form.on('Pch Send Material to Factory', {
 
 	}
 });
+
+frappe.ui.form.on('Pch Send Material to Factory','on_submit',function(frm,cdt,cdn){
+	console.log("On submit");
+	var record=cur_frm.doc.record_type;
+	if(record=="Send Material to Factory")
+	{
+		var response=send_material_to_factory(cur_frm.doc);
+		//console.log(response);
+
+		if(response[0]["Status"]=="Created")
+		{
+			frappe.msgprint("Stock Entry for"+" "+response[0]["Stock Entry Type"]+" "+"has been made"+" "+"ID of the corresponding Stock Entry is"+" "+response[0]["Name"])
+		}
+
+	}
+	/*new approch store :
+	on submit  of "Send Material to Factory" create "receive" on draft mode with valuation rates from stock entry issue
+	or save the record transaction id on stock entry child table or parent table use this as reference and fetch basic rate from this.
+	try creating basic rate of receipt transaction manually first
+	*/
+
+	else if (record=="Receive Material at Factory")
+	{
+		console.log('ok');
+		var response=receive_material_at_factory(cur_frm.doc);
+		console.log(response);
+		if(response[0]["Status"]=="Created")
+		{
+			frappe.msgprint("Stock Entry for"+" "+response[0]["Stock Entry Type"]+" "+"has been made"+" "+"ID of the corresponding Stock Entry is"+" "+response[0]["Name"])
+		}
+	}
+
+
+	else if (record=="Send Material to Corporate") //factory  to  corparate
+	{
+		console.log('ok');
+		var response=send_material_to_corporate(cur_frm.doc);
+		console.log(response);
+		if(response[0]["Status"]=="Created")
+		{
+			frappe.msgprint("Stock Entry for"+" "+response[0]["Stock Entry Type"]+" "+"has been made"+" "+"ID of the corresponding Stock Entry is"+" "+response[0]["Name"])
+		}
+	}
+	else if (record=="Receive Material at Corporate")
+	{
+		console.log('ok');
+		var response=receive_material_at_corporate(cur_frm.doc);
+		console.log(response);
+		if(response[0]["Status"]=="Created")
+		{
+			frappe.msgprint("Stock Entry for"+" "+response[0]["Stock Entry Type"]+" "+"has been made"+" "+"ID of the corresponding Stock Entry is"+" "+response[0]["Name"])
+		}
+	}
+	else
+	{
+		console.log(' ');
+	}
+});
+
 frappe.ui.form.on("Pch Send Material to Factory","corporate_warehouse",function(frm,cdt,cdn){
 
 	var item=cur_frm.doc.item_made;
@@ -15,10 +74,10 @@ frappe.ui.form.on("Pch Send Material to Factory","corporate_warehouse",function(
 	var units_s_r=cur_frm.doc.units_s_r;
 	var r=get_reqd_items(item,start_process,end_process,method);
 	console.log(r);
-	
+
 	for(var i=0;i<r.length;i++)
 	{
-	
+
 		var child=cur_frm.add_child("items_required");
 		var total_qty = units_s_r * r[i]['qty_per_unit_made']
 		/*frappe.model.set_value(child.doctype, child.name, "item_code", r[i]['item_name']);
@@ -40,8 +99,8 @@ frappe.ui.form.on("Pch Send Material to Factory","corporate_warehouse",function(
 				frappe.model.set_value(child.doctype, child.name, "mmd", r[i]['name']);
 				//frappe.model.set_value(child.doctype, child.name, "dispatched_quantity_in_uom",dispatched_qty);
 				frappe.model.set_value(child.doctype, child.name, "operand", r[i]['operand']);
-		
-	
+
+
 	}
 	refresh_field("items_required");
 });
@@ -59,11 +118,11 @@ async:false,
 callback:function(r){
 
 	if(r.message){
-	
+
 		 resp=r.message;
 	}
 }
-		
+
 	})
 	return resp;
 
@@ -74,7 +133,7 @@ frappe.ui.form.on('Pch Send Material to Factory','item_made',function(frm,cdt,cd
 	var item=cur_frm.doc.item_made;
 	var r=get_available_methods(item);
 	console.log(r);
-	
+
 	if(item)
 	{
 	  cur_frm.set_query("manufacturing_method", function(frm, cdt, cdn) {
@@ -82,18 +141,18 @@ frappe.ui.form.on('Pch Send Material to Factory','item_made',function(frm,cdt,cd
             return {
                 "filters": [
                     ["Pch Manufacturing Method", "name", "in", r]
-                    
-                   
-        
+
+
+
                 ]
             }
 		});
-		
+
         cur_frm.refresh_field("manufacturing_method");
 	}
 	else
 	{
-	
+
 		cur_frm.set_value("manufacturing_method","");
 		cur_frm.set_value("start_process","");
 		cur_frm.set_value("end_process","");
@@ -116,15 +175,15 @@ async:false,
 callback:function(r){
 
 	if(r.message){
-	
+
 		 resp=r.message;
 	}
 }
-		
+
 	})
 	return resp;
 
-	
+
 
 
 }
@@ -157,16 +216,16 @@ async:false,
 callback:function(r){
 
 	if(r.message){
-	
+
 		 resp=r.message;
 	}
 }
-		
+
 	})
-	
+
 	return resp;
 
-	
+
 
 
 }
@@ -176,37 +235,37 @@ frappe.ui.form.on('Pch Send Material to Factory','manufacturing_method',function
 	var method=cur_frm.doc.manufacturing_method;
 	var r=get_available_processes(method);
 	console.log(r)
-	
+
 	  cur_frm.set_query("start_process", function(frm, cdt, cdn) {
     			//console.log(wh_n);
             return {
                 "filters": [
                     ["Pch Manufacturing Process", "name", "in", r]
-                    
-                   
-        
+
+
+
                 ]
             }
 		});
-		
+
         cur_frm.refresh_field("start_process");
-        
-        
-        
+
+
+
 	  cur_frm.set_query("end_process", function(frm, cdt, cdn) {
     			//console.log(wh_n);
             return {
                 "filters": [
                     ["Pch Manufacturing Process", "name", "in", r]
-                    
-                   
-        
+
+
+
                 ]
             }
 		});
-		
+
         cur_frm.refresh_field("end_process");
-	
+
 
 
 });
@@ -222,49 +281,20 @@ async:false,
 callback:function(r){
 
 	if(r.message){
-	
+
 		 resp=r.message;
 	}
 }
-		
+
 	})
 	return resp;
 
-	
+
 
 
 }
 //Transaction
-frappe.ui.form.on('Pch Send Material to Factory','on_submit',function(frm,cdt,cdn){
-	console.log("On submit");
-	var record=cur_frm.doc.record_type;
-	if(record=="Send Material to Factory")
-	{
-		var response=send_material_to_factory(cur_frm.doc);
-		//console.log(response);
-		
-		if(response[0]["Status"]=="Created")
-		{
-		
-			frappe.msgprint("Stock Entry for"+" "+response[0]["Stock Entry Type"]+" "+"has been made"+" "+"ID of the corresponding Stock Entry is"+" "+response[0]["Name"])
-		
-		}
-	
-	}
-	else if (record=="Receive Material at Factory")
-	{
-		console.log('ok');
-		var response=receive_material_at_factory(cur_frm.doc);
-		console.log(response);
-	}
-	else
-	{
-	
-		console.log(' ');
-	}
 
-
-});
 function send_material_to_factory(doc_object){
 
 
@@ -275,7 +305,7 @@ function send_material_to_factory(doc_object){
 	var location=doc_object.location;
 	var resp;
 	var entity={
-	
+
 		"items_being_sent":items_being_sent,
 		"corporate_warehouse":corporate_warehouse,
 		"receiving_warehouse":receiving_warehouse,
@@ -308,7 +338,7 @@ function receive_material_at_factory(doc_object){
 	var location=doc_object.location;
 	var resp;
 	var entity={
-	
+
 		"items_being_sent":items_being_sent,
 		"corporate_warehouse":corporate_warehouse,
 		"receiving_warehouse":receiving_warehouse,
@@ -330,9 +360,9 @@ function receive_material_at_factory(doc_object){
 	return resp
 
 }
-frappe.ui.form.on("Pch Reqired Items",{ 
+frappe.ui.form.on("Pch Reqired Items",{
 qty_of_raw_material_being_sent:function(frm, cdt, cdn) {
-	
+
 	var d=locals[cdt][cdn]
 	var cf=d.conversion_factor;
 	var qty_to_be_sent=d.qty_of_raw_material_being_sent
@@ -340,5 +370,5 @@ qty_of_raw_material_being_sent:function(frm, cdt, cdn) {
 	console.log(total_qty)
 	d.dispatched_quantity_in_uom=total_qty
 	}
-	
+
 });
