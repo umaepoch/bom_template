@@ -179,6 +179,83 @@ def receive_material_at_factory(entity):
         response.append({"Name": se_transfer[0]["Name"], "Status": "Not Created", "Stock Entry Type": "Material Receipt"});
         return response
 
+@frappe.whitelist()
+def send_material_to_corporate(entity):
+    entity = json.loads(entity)
+    location = entity.get("location");
+    company = frappe.db.get_value("Pch Locations", {"name": entity.get("location")}, "company");
+    internal_transfer_account = frappe.db.get_value("pch Bom Template Company Settings", {"name": company},
+                                                    "internal_mat_transfer_acc")
+    response = [];
+    # make_transfer
+    # from method_item table  Subcontractor Warehouse== sourch wh and Receiving Warehouse==
+    transfer_items_list = []
+    for i_row in entity.get("items_being_sent"):
+        item_dic = {
+            "item_code": i_row.get("item_code"),
+            "qty": i_row.get("dispatched_quantity_in_uom"),
+            "uom": i_row.get("qty_uom"),
+            "conversion_factor": i_row.get("conversion_factor"),
+            "s_wh": entity.get("receiving_warehouse"),
+            # Internal warehouse from which the material needs to be transferred to process ob
+            "t_wh": entity.get("corporate_warehouse"),
+            "expense_account": internal_transfer_account
+
+        }
+        transfer_items_list.append(item_dic)
+
+    se_trans_entity = {"action": "Material Issue", "items_list": transfer_items_list, "company": company}
+
+    se_transfer = create_stock_entry(se_trans_entity)
+
+
+    if (se_transfer[0]["Exception"] == "Not Occured"):
+        response.append({"Name": se_transfer[0]["Name"], "Status": "Created", "Stock Entry Type": "Material Issue"});
+        return response
+    else:
+        response.append({"Name": se_transfer[0]["Name"], "Status": "Not Created", "Stock Entry Type": "Material Issue"});
+        return response
+
+
+@frappe.whitelist()
+def receive_material_at_corporate(entity):
+    entity = json.loads(entity)
+    # internal_transfer_account = "Inter Location Material Transfer Account - RAKHI"
+    location = entity.get("location");
+    company = frappe.db.get_value("Pch Locations", {"name": entity.get("location")}, "company");
+    internal_transfer_account = frappe.db.get_value("pch Bom Template Company Settings", {"name": company},
+                                                    "internal_mat_transfer_acc")
+
+    response = [];
+    # make_transfer
+    # from method_item table  Subcontractor Warehouse== sourch wh and Receiving Warehouse==
+    transfer_items_list = []
+    for i_row in entity.get("items_being_sent"):
+        item_dic = {
+            "item_code": i_row.get("item_code"),
+            "qty": i_row.get("dispatched_quantity_in_uom"),
+            "uom": i_row.get("qty_uom"),
+            "conversion_factor": i_row.get("conversion_factor"),
+            "s_wh": entity.get("receiving_warehouse"),
+            # Internal warehouse from which the material needs to be transferred to process ob
+            "t_wh": entity.get("corporate_warehouse"),
+            "expense_account": internal_transfer_account,
+            "basic_rate" : get_source_warehouse_val_rate(entity.get("receiving_warehouse"),i_row.get("item_code")) #corporate_warehouse mandatory in recive doc
+        }
+        transfer_items_list.append(item_dic)
+
+    se_trans_entity = {"action": "Material Receipt", "items_list": transfer_items_list, "company": company}
+
+    se_transfer = create_stock_entry(se_trans_entity)
+
+
+    if (se_transfer[0]["Exception"] == "Not Occured"):
+        response.append({"Name": se_transfer[0]["Name"], "Status": "Created", "Stock Entry Type": "Material Receipt"});
+        return response
+    else:
+        response.append({"Name": se_transfer[0]["Name"], "Status": "Not Created", "Stock Entry Type": "Material Receipt"});
+        return response
+
 def get_source_warehouse_val_rate(corporate_warehouse,item_code):
     val_rate_dic = frappe.db.sql(
         """select valuation_rate  
@@ -190,3 +267,31 @@ def get_source_warehouse_val_rate(corporate_warehouse,item_code):
     if val_rate_dic :
         return val_rate_dic[0]["valuation_rate"]
 
+@frappe.whitelist()
+def create_receive_transaction(entity):
+    entity = json.loads(entity)
+    status = []
+    try:
+        smf = frappe.new_doc("Pch Send Material to Factory")
+
+
+        smf.start_process = entity.get("start_process")
+        smf.end_process = entity.get("end_process")
+        smf.location = entity.get("location")
+        smf.units_s_r = entity.get("units_s_r")
+        smf.item_made = entity.get("item_made")
+        smf.manufacturing_method = entity.get("manufacturing_method")
+        smf.record_type = entity.get("record_type")
+        smf.corporate_warehouse = entity.get("corporate_warehouse")
+        smf.receiving_warehouse = entity.get("receiving_warehouse")
+
+        smf.set('items_required', entity.get("items_required"))
+
+
+        smf.save(ignore_permissions=True)
+        frappe.db.commit()
+        status.append({"Name": smf.name, "Exception": "Not Occured","Status": "Created"});
+
+    except Exception as e:
+        status.append({"Name": smf.name, "Exception": "Occured", "Exception type": e,"Status": "Not Created"});
+    return status

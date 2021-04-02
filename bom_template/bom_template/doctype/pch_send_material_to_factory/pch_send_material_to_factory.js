@@ -1,11 +1,27 @@
 // Copyright (c) 2021, Frappe and contributors
 // For license information, please see license.txt
 
+
 frappe.ui.form.on('Pch Send Material to Factory', {
 	refresh: function(frm) {
+	var button_visiblity_record_types = ["Send Material to Factory","Send Material to Corporate"]
+
+	if(cur_frm.doc.docstatus == 1 &&  button_visiblity_record_types.includes(cur_frm.doc.record_type) ){
+	frm.add_custom_button(__("Make Receive"), function() {
+	var response = create_receive_transaction(cur_frm.doc);
+	if(response[0]["Status"]=="Created")
+		{
+			frappe.msgprint("Receive Transaction has been created :"+response[0]["Name"])
+		}
+
+    });//end of buuton trigger
+
+    }
 
 	}
 });
+
+
 
 frappe.ui.form.on('Pch Send Material to Factory','on_submit',function(frm,cdt,cdn){
 	console.log("On submit");
@@ -74,6 +90,7 @@ frappe.ui.form.on("Pch Send Material to Factory","corporate_warehouse",function(
 	var units_s_r=cur_frm.doc.units_s_r;
 	var r=get_reqd_items(item,start_process,end_process,method);
 	console.log(r);
+	cur_frm.clear_table("items_required");
 
 	for(var i=0;i<r.length;i++)
 	{
@@ -330,8 +347,6 @@ function send_material_to_factory(doc_object){
 }
 function receive_material_at_factory(doc_object){
 
-
-
 	var items_being_sent=doc_object.items_required;
 	var corporate_warehouse=doc_object.corporate_warehouse;
 	var receiving_warehouse=doc_object.receiving_warehouse;
@@ -372,3 +387,123 @@ qty_of_raw_material_being_sent:function(frm, cdt, cdn) {
 	}
 
 });
+
+function send_material_to_corporate(doc_object){
+
+	var items_being_sent=doc_object.items_required;
+	var corporate_warehouse=doc_object.corporate_warehouse;
+	var receiving_warehouse=doc_object.receiving_warehouse;
+	var location=doc_object.location;
+	var resp;
+	var entity={
+
+		"items_being_sent":items_being_sent,
+		"corporate_warehouse":corporate_warehouse,
+		"receiving_warehouse":receiving_warehouse,
+		"location":location
+	}
+		frappe.call({
+			method: "bom_template.bom_template.doctype.pch_send_material_to_factory.pch_send_material_to_factory.send_material_to_corporate", //using same function of factory because there is no changes
+			args: {
+		 "entity":entity
+			},
+			async: false,
+			callback: function(r) {
+					if (r.message) {
+							resp=r.message
+							console.log( JSON.stringify(r.message));
+							}
+			} //end of callback fun..
+	}) //end of frappe call..
+	return resp
+
+}
+
+
+function receive_material_at_corporate(doc_object){
+
+	var items_being_sent=doc_object.items_required;
+	var corporate_warehouse=doc_object.corporate_warehouse;
+	var receiving_warehouse=doc_object.receiving_warehouse;
+	var location=doc_object.location;
+	var resp;
+	var entity={
+
+		"items_being_sent":items_being_sent,
+		"corporate_warehouse":corporate_warehouse,
+		"receiving_warehouse":receiving_warehouse,
+		"location":location
+	}
+		frappe.call({
+			method: "bom_template.bom_template.doctype.pch_send_material_to_factory.pch_send_material_to_factory.receive_material_at_corporate", //using same function of factory because there is no changes
+			args: {
+		 "entity":entity
+			},
+			async: false,
+			callback: function(r) {
+					if (r.message) {
+							resp=r.message
+							console.log( JSON.stringify(r.message));
+							}
+			} //end of callback fun..
+	}) //end of frappe call..
+	return resp
+
+}
+
+function create_receive_transaction(doc_object){
+
+
+	var items_required=doc_object.items_required;
+	var corporate_warehouse=doc_object.corporate_warehouse;
+	var receiving_warehouse=doc_object.receiving_warehouse;
+
+	var start_process=doc_object.start_process;
+	var end_process=doc_object.end_process;
+	var units_s_r=doc_object.units_s_r;
+
+	var item_made=doc_object.item_made;
+	var location=doc_object.location;
+	var manufacturing_method=doc_object.manufacturing_method;
+	var record_type;
+	var button_visiblity_record_types = ["Send Material to Factory","Send Material to Corporate"]
+
+
+	if(doc_object.record_type == "Send Material to Factory"){
+	record_type=  "Receive Material at Factory"
+	}
+	else{
+	record_type=  "Receive Material at Corporate"
+	}
+
+	var resp;
+	var entity={
+	    "start_process":start_process,
+	    "end_process":end_process,
+	    "units_s_r":units_s_r,
+	    "item_made":item_made,
+	    "location":location,
+	    "manufacturing_method":manufacturing_method,
+	    "record_type":record_type,
+
+		"items_required":items_required,
+		"corporate_warehouse":corporate_warehouse,
+		"receiving_warehouse":receiving_warehouse
+			}
+		frappe.call({
+			method: "bom_template.bom_template.doctype.pch_send_material_to_factory.pch_send_material_to_factory.create_receive_transaction", //using same function of factory because there is no changes
+			args: {
+		 "entity":entity
+			},
+			async: false,
+			callback: function(r) {
+					if (r.message) {
+							resp=r.message
+							console.log( JSON.stringify(r.message));
+							}
+			} //end of callback fun..
+	}) //end of frappe call..
+	return resp
+
+}
+
