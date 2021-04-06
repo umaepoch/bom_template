@@ -97,7 +97,7 @@ def get_packing_raw_materials(multiple_method_items,start_process,end_process):
     item_made_list_str = ','.join("'{0}'".format(item_made) for item_made, ob_data in item_made_json.items())
     print("item_made_list_str", item_made_list_str)
 
-    query = "select mmd.name,mmd.item_code as item_made,mmdi.item_code,mmdi.item_name,mmdi.qty_uom,mmdi.qty_per_unit_made,mmdi.consumption_type,mmdi.stock_uom,mmdi.conversion_factor,mmdi.operand,mmdi.qty_in_stock_uom from`tabPch Manufacturing Method Details` mmd,`tabPch Manufacturing Method Details RM Child` mmdi where mmd.name=mmdi.parent   and mmd.process_order>={0} and mmd.process_order<= {1}  and mmd.item_code in ( {2} )".format(start_process_pro_ord_no,end_process_pro_ord_no,item_made_list_str)
+    query = "select mmd.name,mmd.pch_process,mmd.item_code as item_made,mmdi.item_code,mmdi.item_name,mmdi.qty_uom,mmdi.qty_per_unit_made,mmdi.consumption_type,mmdi.stock_uom,mmdi.conversion_factor,mmdi.operand,mmdi.qty_in_stock_uom from`tabPch Manufacturing Method Details` mmd,`tabPch Manufacturing Method Details RM Child` mmdi where mmd.name=mmdi.parent   and mmd.process_order>={0} and mmd.process_order<= {1}  and mmd.item_code in ( {2} )".format(start_process_pro_ord_no,end_process_pro_ord_no,item_made_list_str)
     print ("query",query)
     packing_raw_materials = frappe.db.sql(query, as_dict=1)
 

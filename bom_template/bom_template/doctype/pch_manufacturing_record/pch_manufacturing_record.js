@@ -587,6 +587,7 @@ frappe.call({
 				frappe.model.set_value(child.doctype, child.name, "stock_uom", items_list[i]['stock_uom']);
 				frappe.model.set_value(child.doctype, child.name, "conversion_factor", items_list[i]['conversion_factor']);
 				frappe.model.set_value(child.doctype, child.name, "mmd", items_list[i]['name']);
+				frappe.model.set_value(child.doctype, child.name, "pch_process", items_list[i]['pch_process']);
 				//frappe.model.set_value(child.doctype, child.name, "dispatched_quantity_in_uom", items_list[i]['dispatched_quantity_in_uom']);
 				frappe.model.set_value(child.doctype, child.name, "operand", items_list[i]['operand']);
 				refresh_field("req_items");
