@@ -662,7 +662,7 @@ function set_start_end_process_raw_materials(start_process,end_process,method,un
 		async: false,
 		callback: function(r) {
 			 if (r.message) {
-				console.log("raw material json..." + JSON.stringify(r.message));
+				console.log("raw material json... debug" + JSON.stringify(r.message));
 				cur_frm.clear_table("req_items");
 				var items_list = r.message;
 				for (var i=0;i<items_list.length;i++){
@@ -679,6 +679,8 @@ function set_start_end_process_raw_materials(start_process,end_process,method,un
 				frappe.model.set_value(child.doctype, child.name, "stock_uom", items_list[i]['stock_uom']);
 				frappe.model.set_value(child.doctype, child.name, "conversion_factor", items_list[i]['conversion_factor']);
 				frappe.model.set_value(child.doctype, child.name, "mmd", items_list[i]['name']);
+                frappe.model.set_value(child.doctype, child.name, "pch_process", items_list[i]['pch_process']);
+
 				//frappe.model.set_value(child.doctype, child.name, "dispatched_quantity_in_uom", items_list[i]['dispatched_quantity_in_uom']);
 				frappe.model.set_value(child.doctype, child.name, "operand", items_list[i]['operand']);
 				}//end of for loop...
