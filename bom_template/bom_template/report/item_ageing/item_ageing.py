@@ -1,10 +1,12 @@
-# Copyright (c) 2013, Frappe and contributors
-# For license information, please see license.txt
+# Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
+# License: GNU General Public License v3. See license.txt
 
 from __future__ import unicode_literals
 import frappe
 from frappe import _
+from frappe.utils import cint, flt
 from erpnext.stock.utils import update_included_uom_in_report
+from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
 from datetime import datetime
 from datetime import date
 
@@ -14,24 +16,30 @@ def execute(filters=None):
 	items = get_items(filters)
 	sl_entries = get_stock_ledger_entries(filters, items)
 	item_details = get_item_details(items, sl_entries, include_uom)
-	#opening_row = get_opening_balance(filters, columns)
+	opening_row = get_opening_balance(filters, columns)
+	precision = cint(frappe.db.get_single_value("System Settings", "float_precision"))
 
 	data = []
-	check_data = []
 	conversion_factors = []
-
+	check_data = []
 
 	issue_list = []
 	receive_list = []
-	#print "sl_entries",sl_entries
+	if opening_row:
+		data.append(opening_row)
 
-	for sle in sl_entries: #sl_entries should come with item and wh filter
+	actual_qty = stock_value = 0
+
+	print "sl_entries",sl_entries
+
+	available_serial_nos = {}
+	for sle in sl_entries:
 		item_detail = item_details[sle.item_code]
 		row_data = []
 
-		if sle.get("actual_qty") > 0 :
+		if sle.get("actual_qty") > 0:
 			receive_list.append(sle)
-		else :
+		else:
 			issue_list.append(sle)
 
 		check_data.append([sle.date, sle.item_code, item_detail.item_name, item_detail.item_group,
@@ -44,40 +52,62 @@ def execute(filters=None):
 		if include_uom:
 			conversion_factors.append(item_detail.conversion_factor)
 
-	receive_date_wise_dic ={}
-	for receive_list_date_data in receive_list :
-		formatted_date = frappe.utils.formatdate(receive_list_date_data.get("date"), "yyyy-mm-dd")
+		receive_date_wise_dic = {}
+		for receive_list_date_data in receive_list:
+			formatted_date = frappe.utils.formatdate(receive_list_date_data.get("date"), "yyyy-mm-dd")
 
-		if receive_date_wise_dic.get(formatted_date) :
-			receive_date_wise_dic[formatted_date]["actual_qty"] +=  receive_list_date_data.get("actual_qty")
-		else:
-			receive_date_wise_dic[formatted_date] = receive_list_date_data
+			if receive_date_wise_dic.get(formatted_date):
+				receive_date_wise_dic[formatted_date]["actual_qty"] += receive_list_date_data.get("actual_qty")
+			else:
+				receive_date_wise_dic[formatted_date] = receive_list_date_data
 
-	#print "receive_date_wise_dic",receive_date_wise_dic
+		# print "receive_date_wise_dic",receive_date_wise_dic
 
-	sent_date_wise_dic = {}
-	for issue_list_date_data in issue_list:
-		formatted_date = frappe.utils.formatdate(issue_list_date_data.get("date"), "yyyy-mm-dd")
+		sent_date_wise_dic = {}
+		for issue_list_date_data in issue_list:
+			formatted_date = frappe.utils.formatdate(issue_list_date_data.get("date"), "yyyy-mm-dd")
 
-		if sent_date_wise_dic.get(formatted_date):
-			sent_date_wise_dic[formatted_date]["actual_qty"] += issue_list_date_data.get("actual_qty")
-		else:
-			sent_date_wise_dic[formatted_date] = issue_list_date_data
+			if sent_date_wise_dic.get(formatted_date):
+				sent_date_wise_dic[formatted_date]["actual_qty"] += issue_list_date_data.get("actual_qty")
+			else:
+				sent_date_wise_dic[formatted_date] = issue_list_date_data
 
-	item_age_calculated_rows = get_item_age_calculated_rows(receive_date_wise_dic, sent_date_wise_dic)
-	for date, item_age_calculated_row_list in sorted(item_age_calculated_rows.items()):
-		for item_age_calculated_row_dic in item_age_calculated_row_list :
-			row_dic={
-				"date" :date,
-				"item_code":item_age_calculated_row_dic.get("item_code"),
-				"karigar_wh":item_age_calculated_row_dic.get("warehouse"),
-				"recd_qty":item_age_calculated_row_dic.get("in"),
-				"sent_qty":item_age_calculated_row_dic.get("out"),
-				"average_ageing":item_age_calculated_row_dic.get("age")
-			}
-			data.append(row_dic)
+		item_age_calculated_rows = get_item_age_calculated_rows(receive_date_wise_dic, sent_date_wise_dic)
+		for date, item_age_calculated_row_list in sorted(item_age_calculated_rows.items()):
+			for item_age_calculated_row_dic in item_age_calculated_row_list:
+				row_dic = {
+					"date": date,
+					"item_code": item_age_calculated_row_dic.get("item_code"),
+					"karigar_wh": item_age_calculated_row_dic.get("warehouse"),
+					"recd_qty": item_age_calculated_row_dic.get("in"),
+					"sent_qty": item_age_calculated_row_dic.get("out"),
+					"average_ageing": item_age_calculated_row_dic.get("age")
+				}
+				data.append(row_dic)
+
+
 	return columns, data
 
+def update_available_serial_nos(available_serial_nos, sle):
+	serial_nos = get_serial_nos(sle.serial_no)
+	key = (sle.item_code, sle.warehouse)
+	if key not in available_serial_nos:
+		available_serial_nos.setdefault(key, [])
+
+	existing_serial_no = available_serial_nos[key]
+	for sn in serial_nos:
+		if sle.actual_qty > 0:
+			if sn in existing_serial_no:
+				existing_serial_no.remove(sn)
+			else:
+				existing_serial_no.append(sn)
+		else:
+			if sn in existing_serial_no:
+				existing_serial_no.remove(sn)
+			else:
+				existing_serial_no.append(sn)
+
+	sle.balance_serial_no = '\n'.join(existing_serial_no)
 
 def get_columns():
 	#25 columns now ,29 columns now
@@ -121,21 +151,22 @@ def get_columns():
 	}
 	return columns
 
+
 def get_stock_ledger_entries(filters, items):
 	item_conditions_sql = ''
 	if items:
 		item_conditions_sql = 'and sle.item_code in ({})'\
-			.format(', '.join(['"' + frappe.db.escape(i) + '"' for i in items]))
+			.format(', '.join([frappe.db.escape(i) for i in items]))
 
 	return frappe.db.sql("""select concat_ws(" ", posting_date, posting_time) as date,
 			item_code, warehouse, actual_qty, qty_after_transaction, incoming_rate, valuation_rate,
-			stock_value, voucher_type, voucher_no, batch_no, serial_no, company, project
+			stock_value, voucher_type, voucher_no, batch_no, serial_no, company, project, stock_value_difference
 		from `tabStock Ledger Entry` sle
 		where company = %(company)s and
 			posting_date between %(from_date)s and %(to_date)s
 			{sle_conditions}
 			{item_conditions_sql}
-			order by posting_date asc, posting_time asc, name asc"""\
+			order by posting_date asc, posting_time asc, creation asc"""\
 		.format(
 			sle_conditions=get_sle_conditions(filters),
 			item_conditions_sql = item_conditions_sql
@@ -168,10 +199,9 @@ def get_item_details(items, sl_entries, include_uom):
 	cf_field = cf_join = ""
 	if include_uom:
 		cf_field = ", ucd.conversion_factor"
-		cf_join = "left join `tabUOM Conversion Detail` ucd on ucd.parent=item.name and ucd.uom='%s'" \
+		cf_join = "left join `tabUOM Conversion Detail` ucd on ucd.parent=item.name and ucd.uom=%s" \
 			% frappe.db.escape(include_uom)
 
-	item_codes = ', '.join(['"' + frappe.db.escape(i, percent=False) + '"' for i in items])
 	res = frappe.db.sql("""
 		select
 			item.name, item.item_name, item.description, item.item_group, item.brand, item.stock_uom {cf_field}
@@ -180,7 +210,7 @@ def get_item_details(items, sl_entries, include_uom):
 			{cf_join}
 		where
 			item.name in ({item_codes})
-	""".format(cf_field=cf_field, cf_join=cf_join, item_codes=item_codes), as_dict=1)
+	""".format(cf_field=cf_field, cf_join=cf_join, item_codes=','.join(['%s'] *len(items))), items, as_dict=1)
 
 	for item in res:
 		item_details.setdefault(item.name, item)
@@ -213,10 +243,10 @@ def get_opening_balance(filters, columns):
 		"posting_date": filters.from_date,
 		"posting_time": "00:00:00"
 	})
-	row = [""]*len(columns)
-	row[1] = _("'Opening'")
-	for i, v in ((9, 'qty_after_transaction'), (11, 'valuation_rate'), (12, 'stock_value')):
-			row[i] = last_entry.get(v, 0)
+	row = {}
+	row["item_code"] = _("'Opening'")
+	for dummy, v in ((9, 'qty_after_transaction'), (11, 'valuation_rate'), (12, 'stock_value')):
+			row[v] = last_entry.get(v, 0)
 
 	return row
 
@@ -237,7 +267,6 @@ def get_item_group_condition(item_group):
 			item_group_details.rgt)
 
 	return ''
-
 
 def get_item_age_calculated_rows(receive_date_wise_dic,sent_date_wise_dic):
 
