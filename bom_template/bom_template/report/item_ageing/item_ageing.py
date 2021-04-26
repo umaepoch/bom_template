@@ -314,8 +314,7 @@ def get_item_age_calculated_rows(receive_date_wise_dic,sent_date_wise_dic):
 					sent_row_data["out"] = qty_left_from_qty_to_be_sent
 					sent_row_data["trans_type"] = "sent"
 
-					updated_initial_receive_item_age_rows_temp_rec_loop[receive_date][
-						"bal_qty_temp"] = bal_qty_in_rec_date_data - qty_left_from_qty_to_be_sent
+					updated_initial_receive_item_age_rows_temp_rec_loop[receive_date]["bal_qty_temp"] = bal_qty_in_rec_date_data - qty_left_from_qty_to_be_sent
 
 					qty_left_from_qty_to_be_sent = qty_left_from_qty_to_be_sent - sent_row_data["out"]
 					qty_assigned_from_qty_to_be_sent = qty_assigned_from_qty_to_be_sent + sent_row_data["out"]
@@ -338,8 +337,7 @@ def get_item_age_calculated_rows(receive_date_wise_dic,sent_date_wise_dic):
 				sent_row_data["out"] = qty_left_from_qty_to_be_sent
 				sent_row_data["trans_type"] = "sent"
 
-				updated_initial_receive_item_age_rows_temp_rec_loop[receive_date][
-					"bal_qty_temp"] = bal_qty_in_rec_date_data - qty_left_from_qty_to_be_sent
+				updated_initial_receive_item_age_rows_temp_rec_loop[receive_date]["bal_qty_temp"] = bal_qty_in_rec_date_data - qty_left_from_qty_to_be_sent
 
 				# sent row data update
 				if report_json_data.get(receive_date):
@@ -362,8 +360,7 @@ def get_item_age_calculated_rows(receive_date_wise_dic,sent_date_wise_dic):
 				sent_row_data["out"] = qty_can_be_sent_from_receive
 				sent_row_data["trans_type"] = "sent"
 
-				updated_initial_receive_item_age_rows_temp_rec_loop[receive_date][
-					"bal_qty_temp"] = bal_qty_in_rec_date_data - qty_can_be_sent_from_receive
+				updated_initial_receive_item_age_rows_temp_rec_loop[receive_date]["bal_qty_temp"] = bal_qty_in_rec_date_data - qty_can_be_sent_from_receive
 
 				qty_left_from_qty_to_be_sent = qty_left_from_qty_to_be_sent - sent_row_data["out"]
 				qty_assigned_from_qty_to_be_sent = qty_assigned_from_qty_to_be_sent + sent_row_data["out"]
@@ -379,10 +376,10 @@ def get_item_age_calculated_rows(receive_date_wise_dic,sent_date_wise_dic):
 				else:
 					break
 
-	# updation for receive loop calculation
-	initial_receive_item_age_rows = updated_initial_receive_item_age_rows_temp_rec_loop  # each recive for loop will have updated receive balance qty
-	# updation for total received date calculatiom
-	updated_initial_receive_item_age_rows = updated_initial_receive_item_age_rows_temp_rec_loop
+		# updation for receive loop calculation
+		initial_receive_item_age_rows = updated_initial_receive_item_age_rows_temp_rec_loop  # each recive for loop will have updated receive balance qty
+		# updation for total received date calculatiom
+		updated_initial_receive_item_age_rows = updated_initial_receive_item_age_rows_temp_rec_loop
 
 	for receive_date, initial_receive_item_age_row in sorted(updated_initial_receive_item_age_rows.items()):
 
