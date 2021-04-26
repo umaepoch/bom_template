@@ -289,147 +289,130 @@ def get_item_age_calculated_rows(receive_date_wise_dic,sent_date_wise_dic):
 	today = 1
 	updated_initial_receive_item_age_rows = {}  # received date updated balance qty
 
-	if sent_date_wise_dic:
-		for sent_date, sent_date_data in sorted(sent_date_wise_dic.items()):
-			qty_needed_to_sent = abs(sent_date_data.get("actual_qty"))
-			qty_assigned_from_qty_to_be_sent = 0
-			qty_left_from_qty_to_be_sent = qty_needed_to_sent
+    for sent_date, sent_date_data in sorted(sent_date_wise_dic.items()):
+        qty_needed_to_sent = abs(sent_date_data.get("actual_qty"))
+        qty_assigned_from_qty_to_be_sent = 0
+        qty_left_from_qty_to_be_sent = qty_needed_to_sent
 
-			updated_initial_receive_item_age_rows_temp_rec_loop = initial_receive_item_age_rows
+        updated_initial_receive_item_age_rows_temp_rec_loop = initial_receive_item_age_rows
 
-			for receive_date, initial_receive_item_age_row in sorted(initial_receive_item_age_rows.items()):
+        for receive_date, initial_receive_item_age_row in sorted(initial_receive_item_age_rows.items()):
 
-				bal_qty_in_rec_date_data = updated_initial_receive_item_age_rows_temp_rec_loop[receive_date]["bal_qty_temp"]
+            bal_qty_in_rec_date_data = updated_initial_receive_item_age_rows_temp_rec_loop[receive_date]["bal_qty_temp"]
 
-				if bal_qty_in_rec_date_data > 0:  # checking stock against received date
+            if bal_qty_in_rec_date_data > 0:  # checking stock against received date
 
-					if bal_qty_in_rec_date_data > qty_left_from_qty_to_be_sent:
+                if bal_qty_in_rec_date_data > qty_left_from_qty_to_be_sent:
 
-						sent_row_data = {}
-						sent_row_data["warehouse"] = initial_receive_item_age_row["warehouse"]
-						sent_row_data["item_code"] = initial_receive_item_age_row["item_code"]
-						sent_row_data["actual_qty"] = initial_receive_item_age_row["actual_qty"]
-						sent_age_cal = initial_receive_item_age_row["age"] - sent_date_age
-						sent_row_data["age"] = get_age_in_days(sent_date, receive_date)
-						sent_row_data["in"] = qty_left_from_qty_to_be_sent
-						sent_row_data["out"] = qty_left_from_qty_to_be_sent
-						sent_row_data["trans_type"] = "sent"
+                    sent_row_data = {}
+                    sent_row_data["warehouse"] = initial_receive_item_age_row["warehouse"]
+                    sent_row_data["item_code"] = initial_receive_item_age_row["item_code"]
+                    sent_row_data["actual_qty"] = initial_receive_item_age_row["actual_qty"]
+                    sent_age_cal = initial_receive_item_age_row["age"] - sent_date_age
+                    sent_row_data["age"] = get_age_in_days(sent_date, receive_date)
+                    sent_row_data["in"] = qty_left_from_qty_to_be_sent
+                    sent_row_data["out"] = qty_left_from_qty_to_be_sent
+                    sent_row_data["trans_type"] = "sent"
 
-						updated_initial_receive_item_age_rows_temp_rec_loop[receive_date][
-							"bal_qty_temp"] = bal_qty_in_rec_date_data - qty_left_from_qty_to_be_sent
+                    updated_initial_receive_item_age_rows_temp_rec_loop[receive_date][
+                        "bal_qty_temp"] = bal_qty_in_rec_date_data - qty_left_from_qty_to_be_sent
 
-						qty_left_from_qty_to_be_sent = qty_left_from_qty_to_be_sent - sent_row_data["out"]
-						qty_assigned_from_qty_to_be_sent = qty_assigned_from_qty_to_be_sent + sent_row_data["out"]
+                    qty_left_from_qty_to_be_sent = qty_left_from_qty_to_be_sent - sent_row_data["out"]
+                    qty_assigned_from_qty_to_be_sent = qty_assigned_from_qty_to_be_sent + sent_row_data["out"]
 
-						# sent row data update
-						if report_json_data.get(receive_date):
-							report_json_data[receive_date].append(sent_row_data)
-						else:
-							report_json_data[receive_date] = [sent_row_data]
+                    # sent row data update
+                    if report_json_data.get(receive_date):
+                        report_json_data[receive_date].append(sent_row_data)
+                    else:
+                        report_json_data[receive_date] = [sent_row_data]
 
-						break
+                    break
 
-					elif bal_qty_in_rec_date_data == qty_left_from_qty_to_be_sent:
-						sent_row_data = {}
-						sent_row_data["warehouse"] = initial_receive_item_age_row["warehouse"]
-						sent_row_data["item_code"] = initial_receive_item_age_row["item_code"]
-						sent_row_data["actual_qty"] = initial_receive_item_age_row["actual_qty"]
-						sent_row_data["age"] = get_age_in_days(sent_date, receive_date)
-						sent_row_data["in"] = qty_left_from_qty_to_be_sent
-						sent_row_data["out"] = qty_left_from_qty_to_be_sent
-						sent_row_data["trans_type"] = "sent"
+                elif bal_qty_in_rec_date_data == qty_left_from_qty_to_be_sent:
+                    sent_row_data = {}
+                    sent_row_data["warehouse"] = initial_receive_item_age_row["warehouse"]
+                    sent_row_data["item_code"] = initial_receive_item_age_row["item_code"]
+                    sent_row_data["actual_qty"] = initial_receive_item_age_row["actual_qty"]
+                    sent_row_data["age"] = get_age_in_days(sent_date, receive_date)
+                    sent_row_data["in"] = qty_left_from_qty_to_be_sent
+                    sent_row_data["out"] = qty_left_from_qty_to_be_sent
+                    sent_row_data["trans_type"] = "sent"
 
-						updated_initial_receive_item_age_rows_temp_rec_loop[receive_date][
-							"bal_qty_temp"] = bal_qty_in_rec_date_data - qty_left_from_qty_to_be_sent
+                    updated_initial_receive_item_age_rows_temp_rec_loop[receive_date][
+                        "bal_qty_temp"] = bal_qty_in_rec_date_data - qty_left_from_qty_to_be_sent
 
-						# sent row data update
-						if report_json_data.get(receive_date):
-							report_json_data[receive_date].append(sent_row_data)
-						else:
-							report_json_data[receive_date] = [sent_row_data]
+                    # sent row data update
+                    if report_json_data.get(receive_date):
+                        report_json_data[receive_date].append(sent_row_data)
+                    else:
+                        report_json_data[receive_date] = [sent_row_data]
 
-						qty_left_from_qty_to_be_sent = qty_left_from_qty_to_be_sent - sent_row_data["out"]
-						qty_assigned_from_qty_to_be_sent = qty_assigned_from_qty_to_be_sent + sent_row_data["out"]
-						break
+                    qty_left_from_qty_to_be_sent = qty_left_from_qty_to_be_sent - sent_row_data["out"]
+                    qty_assigned_from_qty_to_be_sent = qty_assigned_from_qty_to_be_sent + sent_row_data["out"]
+                    break
 
-					else:
-						qty_can_be_sent_from_receive = bal_qty_in_rec_date_data
-						sent_row_data = {}
-						sent_row_data["warehouse"] = initial_receive_item_age_row["warehouse"]
-						sent_row_data["item_code"] = initial_receive_item_age_row["item_code"]
-						sent_row_data["actual_qty"] = initial_receive_item_age_row["actual_qty"]
-						sent_row_data["age"] = get_age_in_days(sent_date, receive_date)
-						sent_row_data["in"] = qty_can_be_sent_from_receive
-						sent_row_data["out"] = qty_can_be_sent_from_receive
-						sent_row_data["trans_type"] = "sent"
+                else:
+                    qty_can_be_sent_from_receive = bal_qty_in_rec_date_data
+                    sent_row_data = {}
+                    sent_row_data["warehouse"] = initial_receive_item_age_row["warehouse"]
+                    sent_row_data["item_code"] = initial_receive_item_age_row["item_code"]
+                    sent_row_data["actual_qty"] = initial_receive_item_age_row["actual_qty"]
+                    sent_row_data["age"] = get_age_in_days(sent_date, receive_date)
+                    sent_row_data["in"] = qty_can_be_sent_from_receive
+                    sent_row_data["out"] = qty_can_be_sent_from_receive
+                    sent_row_data["trans_type"] = "sent"
 
-						updated_initial_receive_item_age_rows_temp_rec_loop[receive_date][
-							"bal_qty_temp"] = bal_qty_in_rec_date_data - qty_can_be_sent_from_receive
+                    updated_initial_receive_item_age_rows_temp_rec_loop[receive_date][
+                        "bal_qty_temp"] = bal_qty_in_rec_date_data - qty_can_be_sent_from_receive
 
-						qty_left_from_qty_to_be_sent = qty_left_from_qty_to_be_sent - sent_row_data["out"]
-						qty_assigned_from_qty_to_be_sent = qty_assigned_from_qty_to_be_sent + sent_row_data["out"]
+                    qty_left_from_qty_to_be_sent = qty_left_from_qty_to_be_sent - sent_row_data["out"]
+                    qty_assigned_from_qty_to_be_sent = qty_assigned_from_qty_to_be_sent + sent_row_data["out"]
 
-						# sent row data update
-						if report_json_data.get(receive_date):
-							report_json_data[receive_date].append(sent_row_data)
-						else:
-							report_json_data[receive_date] = [sent_row_data]
+                    # sent row data update
+                    if report_json_data.get(receive_date):
+                        report_json_data[receive_date].append(sent_row_data)
+                    else:
+                        report_json_data[receive_date] = [sent_row_data]
 
-						if qty_left_from_qty_to_be_sent > 0:
-							continue
-						else:
-							break
+                    if qty_left_from_qty_to_be_sent > 0:
+                        continue
+                    else:
+                        break
 
-			# updation for receive loop calculation
-			initial_receive_item_age_rows = updated_initial_receive_item_age_rows_temp_rec_loop  # each recive for loop will have updated receive balance qty
-			# updation for total received date calculatiom
-			updated_initial_receive_item_age_rows = updated_initial_receive_item_age_rows_temp_rec_loop
+        # updation for receive loop calculation
+        initial_receive_item_age_rows = updated_initial_receive_item_age_rows_temp_rec_loop  # each recive for loop will have updated receive balance qty
+        # updation for total received date calculatiom
+        updated_initial_receive_item_age_rows = updated_initial_receive_item_age_rows_temp_rec_loop
 
-		for receive_date, initial_receive_item_age_row in sorted(updated_initial_receive_item_age_rows.items()):
+    for receive_date, initial_receive_item_age_row in sorted(updated_initial_receive_item_age_rows.items()):
 
-			if initial_receive_item_age_row.get("bal_qty_temp") > 0:
-				receive_row_data = {}
-				receive_row_data["warehouse"] = initial_receive_item_age_row["warehouse"]
-				receive_row_data["item_code"] = initial_receive_item_age_row["item_code"]
-				receive_row_data["actual_qty"] = initial_receive_item_age_row["actual_qty"]
+        if initial_receive_item_age_row.get("bal_qty_temp") > 0:
+            receive_row_data = {}
+            receive_row_data["warehouse"] = initial_receive_item_age_row["warehouse"]
+            receive_row_data["item_code"] = initial_receive_item_age_row["item_code"]
+            receive_row_data["actual_qty"] = initial_receive_item_age_row["actual_qty"]
 
-				receive_row_data["age"] = initial_receive_item_age_row["age"]
-				receive_row_data["in"] = initial_receive_item_age_row["bal_qty_temp"]
-				receive_row_data["trans_type"] = "receive"
+            receive_row_data["age"] = initial_receive_item_age_row["age"]
+            receive_row_data["in"] = initial_receive_item_age_row["bal_qty_temp"]
+            receive_row_data["trans_type"] = "receive"
 
-				# receive row data update
-				#report_json_data[receive_date] = [receive_row_data]
+            # receive row data update
+            #report_json_data[receive_date] = [receive_row_data]
 
-				if report_json_data.get(receive_date):
-					report_json_data[receive_date].append(receive_row_data)
-				else:
-					report_json_data[receive_date] = [receive_row_data]
+            if report_json_data.get(receive_date):
+                report_json_data[receive_date].append(receive_row_data)
+            else:
+                report_json_data[receive_date] = [receive_row_data]
+
 
 
 		#print "report_json_data", report_json_data
 
-	else: #if no sent date wise dic
-		for receive_date, initial_receive_item_age_row in sorted(initial_receive_item_age_rows.items()):
+    return  report_json_data
 
-			if initial_receive_item_age_row.get("bal_qty_temp") > 0:
-				receive_row_data = {}
-				receive_row_data["warehouse"] = initial_receive_item_age_row["warehouse"]
-				receive_row_data["item_code"] = initial_receive_item_age_row["item_code"]
-				receive_row_data["actual_qty"] = initial_receive_item_age_row["actual_qty"]
 
-				receive_row_data["age"] = initial_receive_item_age_row["age"]
-				receive_row_data["in"] = initial_receive_item_age_row["bal_qty_temp"]
-				receive_row_data["trans_type"] = "receive"
 
-				# receive row data update
-				#report_json_data[receive_date] = [receive_row_data]
 
-				if report_json_data.get(receive_date):
-					report_json_data[receive_date].append(receive_row_data)
-				else:
-					report_json_data[receive_date] = [receive_row_data]
-
-	return report_json_data
 
 
 
