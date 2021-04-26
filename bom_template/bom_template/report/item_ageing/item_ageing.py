@@ -30,7 +30,7 @@ def execute(filters=None):
 
 	actual_qty = stock_value = 0
 
-	print "sl_entries",sl_entries
+	#print "sl_entries",sl_entries
 
 	available_serial_nos = {}
 	for sle in sl_entries:
