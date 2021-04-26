@@ -402,21 +402,7 @@ def get_item_age_calculated_rows(receive_date_wise_dic,sent_date_wise_dic):
 
 		#print "report_json_data", report_json_data
 
-	else: #if no sent date wise dic
-		for receive_date, initial_receive_item_age_row in sorted(initial_receive_item_age_rows.items()):
-
-			if initial_receive_item_age_row.get("bal_qty_temp") > 0:
-				receive_row_data = {}
-				receive_row_data["warehouse"] = initial_receive_item_age_row["warehouse"]
-				receive_row_data["item_code"] = initial_receive_item_age_row["item_code"]
-				receive_row_data["actual_qty"] = initial_receive_item_age_row["actual_qty"]
-
-				receive_row_data["age"] = initial_receive_item_age_row["age"]
-				receive_row_data["in"] = initial_receive_item_age_row["bal_qty_temp"]
-				receive_row_data["trans_type"] = "receive"
-
-				# receive row data update
-				report_json_data[receive_date] = [receive_row_data]
+	
 
 	return report_json_data
 
