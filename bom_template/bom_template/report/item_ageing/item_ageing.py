@@ -279,7 +279,7 @@ def get_item_age_calculated_rows(receive_date_wise_dic,sent_date_wise_dic):
 		today_date_temp = frappe.utils.formatdate(today_date, "yyyy-mm-dd");
 
 		receive_date_data["age"] = get_age_in_days(today_date,receive_date)
-		receive_date_data["bal_qty"] = receive_date_data.get("actual_qty")
+		receive_date_data["bal_qty_temp"] = receive_date_data.get("actual_qty")
 		initial_receive_item_age_rows.update({receive_date: receive_date_data})
 
 	#print ("initial_receive_item_age_rows first",initial_receive_item_age_rows)
@@ -299,7 +299,7 @@ def get_item_age_calculated_rows(receive_date_wise_dic,sent_date_wise_dic):
 
 			for receive_date, initial_receive_item_age_row in sorted(initial_receive_item_age_rows.items()):
 
-				bal_qty_in_rec_date_data = updated_initial_receive_item_age_rows_temp_rec_loop[receive_date]["bal_qty"]
+				bal_qty_in_rec_date_data = updated_initial_receive_item_age_rows_temp_rec_loop[receive_date]["bal_qty_temp"]
 
 				if bal_qty_in_rec_date_data > 0:  # checking stock against received date
 
@@ -316,7 +316,7 @@ def get_item_age_calculated_rows(receive_date_wise_dic,sent_date_wise_dic):
 						sent_row_data["trans_type"] = "sent"
 
 						updated_initial_receive_item_age_rows_temp_rec_loop[receive_date][
-							"bal_qty"] = bal_qty_in_rec_date_data - qty_left_from_qty_to_be_sent
+							"bal_qty_temp"] = bal_qty_in_rec_date_data - qty_left_from_qty_to_be_sent
 
 						qty_left_from_qty_to_be_sent = qty_left_from_qty_to_be_sent - sent_row_data["out"]
 						qty_assigned_from_qty_to_be_sent = qty_assigned_from_qty_to_be_sent + sent_row_data["out"]
@@ -340,7 +340,7 @@ def get_item_age_calculated_rows(receive_date_wise_dic,sent_date_wise_dic):
 						sent_row_data["trans_type"] = "sent"
 
 						updated_initial_receive_item_age_rows_temp_rec_loop[receive_date][
-							"bal_qty"] = bal_qty_in_rec_date_data - qty_left_from_qty_to_be_sent
+							"bal_qty_temp"] = bal_qty_in_rec_date_data - qty_left_from_qty_to_be_sent
 
 						# sent row data update
 						if report_json_data.get(receive_date):
@@ -364,7 +364,7 @@ def get_item_age_calculated_rows(receive_date_wise_dic,sent_date_wise_dic):
 						sent_row_data["trans_type"] = "sent"
 
 						updated_initial_receive_item_age_rows_temp_rec_loop[receive_date][
-							"bal_qty"] = bal_qty_in_rec_date_data - qty_can_be_sent_from_receive
+							"bal_qty_temp"] = bal_qty_in_rec_date_data - qty_can_be_sent_from_receive
 
 						qty_left_from_qty_to_be_sent = qty_left_from_qty_to_be_sent - sent_row_data["out"]
 						qty_assigned_from_qty_to_be_sent = qty_assigned_from_qty_to_be_sent + sent_row_data["out"]
@@ -387,14 +387,14 @@ def get_item_age_calculated_rows(receive_date_wise_dic,sent_date_wise_dic):
 
 		for receive_date, initial_receive_item_age_row in sorted(updated_initial_receive_item_age_rows.items()):
 
-			if initial_receive_item_age_row.get("bal_qty") > 0:
+			if initial_receive_item_age_row.get("bal_qty_temp") > 0:
 				receive_row_data = {}
 				receive_row_data["warehouse"] = initial_receive_item_age_row["warehouse"]
 				receive_row_data["item_code"] = initial_receive_item_age_row["item_code"]
 				receive_row_data["actual_qty"] = initial_receive_item_age_row["actual_qty"]
 
 				receive_row_data["age"] = initial_receive_item_age_row["age"]
-				receive_row_data["in"] = initial_receive_item_age_row["bal_qty"]
+				receive_row_data["in"] = initial_receive_item_age_row["bal_qty_temp"]
 				receive_row_data["trans_type"] = "receive"
 
 				# receive row data update
@@ -405,14 +405,14 @@ def get_item_age_calculated_rows(receive_date_wise_dic,sent_date_wise_dic):
 	else: #if no sent date wise dic
 		for receive_date, initial_receive_item_age_row in sorted(initial_receive_item_age_rows.items()):
 
-			if initial_receive_item_age_row.get("bal_qty") > 0:
+			if initial_receive_item_age_row.get("bal_qty_temp") > 0:
 				receive_row_data = {}
 				receive_row_data["warehouse"] = initial_receive_item_age_row["warehouse"]
 				receive_row_data["item_code"] = initial_receive_item_age_row["item_code"]
 				receive_row_data["actual_qty"] = initial_receive_item_age_row["actual_qty"]
 
 				receive_row_data["age"] = initial_receive_item_age_row["age"]
-				receive_row_data["in"] = initial_receive_item_age_row["bal_qty"]
+				receive_row_data["in"] = initial_receive_item_age_row["bal_qty_temp"]
 				receive_row_data["trans_type"] = "receive"
 
 				# receive row data update
